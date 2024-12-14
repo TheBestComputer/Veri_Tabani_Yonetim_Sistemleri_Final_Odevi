@@ -1,16 +1,16 @@
-**MySql indirme aşamalarını youtube videosundan indirebilirsiniz:
+MySql indirme aşamalarını youtube videosundan indirebilirsiniz:
 -https://www.youtube.com/watch?v=dbSdY_Gj4zM
 
 
 
-**Aşağıdaki kodu derlemek için terminale yazın:
+Aşağıdaki kodu derlemek için terminale yazın:
 javac *.java
-**Aşağıdaki üç kodu yazarak çalıştırın
+Aşağıdaki üç kodu yazarak çalıştırın
 java -cp ".;JarFile\mysql-connector-j-9.0.0.jar" DatabaseHelper
 java -cp ".;JarFile\mysql-connector-j-9.0.0.jar" ProjeRepository
 java -cp ".;JarFile\mysql-connector-j-9.0.0.jar" ProjeYonetimUI
 
-**MySql kodları aşağıdadır:
+MySql kodları aşağıdadır:
 
 CREATE DATABASE ProjeYonetim;
 USE ProjeYonetim;
