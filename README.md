@@ -5,7 +5,7 @@ MySql indirme aşamalarını youtube videosundan indirebilirsiniz:
 
 Aşağıdaki kodu derlemek için terminale yazın:
 javac *.java
-Aşağıdaki üç kodu yazarak çalıştırın
+Aşağıdaki üç kodu yazarak çalıştırın:
 java -cp ".;JarFile\mysql-connector-j-9.0.0.jar" DatabaseHelper
 java -cp ".;JarFile\mysql-connector-j-9.0.0.jar" ProjeRepository
 java -cp ".;JarFile\mysql-connector-j-9.0.0.jar" ProjeYonetimUI
