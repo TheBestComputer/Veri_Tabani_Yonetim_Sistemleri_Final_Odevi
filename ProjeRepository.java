@@ -1,8 +1,24 @@
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ProjeRepository {
+class ProjeRepository {
+    public static void main(String[] args) {
+        ProjeRepository repository = new ProjeRepository();
+
+        // Proje ekleme örneği
+        repository.projeEkle("Yeni Proje", "2024-12-15", "2025-01-15");
+
+        // Proje listeleme örneği
+        List<String> projeler = repository.projeListele();
+        for (String proje : projeler) {
+            System.out.println(proje);
+        }
+    }
+
     public void projeEkle(String ad, String baslangicTarihi, String bitisTarihi) {
         String sql = "INSERT INTO Projeler (Ad, BaslangicTarihi, BitisTarihi) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseHelper.getConnection();
@@ -19,10 +35,22 @@ public class ProjeRepository {
         }
     }
 
-    public static void main(String[] args) {
-        ProjeRepository repository = new ProjeRepository();
-        // Test için proje ekleyelim
-        repository.projeEkle("Proje 1", "2024-01-01", "2024-12-31");
+    public List<String> projeListele() {
+        String sql = "SELECT * FROM Projeler";
+        List<String> projeler = new ArrayList<>();
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                String ad = rs.getString("Ad");
+                String baslangicTarihi = rs.getString("BaslangicTarihi");
+                String bitisTarihi = rs.getString("BitisTarihi");
+                projeler.add(ad + ": " + baslangicTarihi + " - " + bitisTarihi);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return projeler;
     }
 }
-
