@@ -48,18 +48,22 @@ public class GirisEkrani {
 class AnaMenu {
     public static void main(String[] args) {
         JFrame frame = new JFrame("Ana Menü");
-        frame.setSize(300, 200);
+        frame.setSize(400, 300);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(3, 1));
+        JPanel panel = new JPanel(new GridLayout(5, 1));
 
         JButton btnProjeEkle = new JButton("Yeni Proje Ekle");
         JButton btnProjeListele = new JButton("Projeleri Listele");
+        JButton btnPersonelEkle = new JButton("Yeni Personel Ekle");
+        JButton btnPersonelListele = new JButton("Personelleri Listele");
         JButton btnCikis = new JButton("Çıkış");
 
         panel.add(btnProjeEkle);
         panel.add(btnProjeListele);
+        panel.add(btnPersonelEkle);
+        panel.add(btnPersonelListele);
         panel.add(btnCikis);
 
         frame.add(panel);
@@ -68,11 +72,85 @@ class AnaMenu {
 
         btnProjeListele.addActionListener(e -> ProjeListele.main(null));
 
+        btnPersonelEkle.addActionListener(e -> PersonelEkle.main(null));
+
+        btnPersonelListele.addActionListener(e -> PersonelListele.main(null));
+
         btnCikis.addActionListener(e -> {
             frame.dispose();
             GirisEkrani.main(null);
         });
 
+        frame.setVisible(true);
+    }
+}
+
+class PersonelEkle {
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Yeni Personel Ekle");
+        frame.setSize(300, 300);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel(new GridLayout(4, 2));
+
+        JLabel lblAd = new JLabel("Ad:");
+        JTextField txtAd = new JTextField();
+        JLabel lblSoyad = new JLabel("Soyad:");
+        JTextField txtSoyad = new JTextField();
+        JLabel lblEmail = new JLabel("Email:");
+        JTextField txtEmail = new JTextField();
+
+        JButton btnKaydet = new JButton("Kaydet");
+
+        panel.add(lblAd);
+        panel.add(txtAd);
+        panel.add(lblSoyad);
+        panel.add(txtSoyad);
+        panel.add(lblEmail);
+        panel.add(txtEmail);
+        panel.add(btnKaydet);
+
+        frame.add(panel);
+
+        btnKaydet.addActionListener(e -> {
+            String ad = txtAd.getText();
+            String soyad = txtSoyad.getText();
+            String email = txtEmail.getText();
+
+            CalisanRepository repository = new CalisanRepository();
+            repository.calisanEkle(ad, soyad, email);
+            JOptionPane.showMessageDialog(frame, "Personel başarıyla eklendi.", "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+            frame.dispose();
+        });
+
+        frame.setVisible(true);
+    }
+}
+
+class PersonelListele {
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Personelleri Listele");
+        frame.setSize(400, 300);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel();
+        JTextArea txtArea = new JTextArea(10, 30);
+        txtArea.setEditable(false);
+
+        CalisanRepository repository = new CalisanRepository();
+        List<String> personeller = repository.calisanListele();
+
+        StringBuilder sb = new StringBuilder();
+        for (String personel : personeller) {
+            sb.append(personel).append("\n");
+        }
+        txtArea.setText(sb.toString());
+
+        panel.add(new JScrollPane(txtArea));
+
+        frame.add(panel);
         frame.setVisible(true);
     }
 }
