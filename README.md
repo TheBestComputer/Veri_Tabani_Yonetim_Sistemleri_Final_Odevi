@@ -8,7 +8,7 @@ javac *.java
 Aşağıdaki üç kodu yazarak çalıştırın:
 java -cp ".;JarFile\mysql-connector-j-9.0.0.jar" DatabaseHelper
 java -cp ".;JarFile\mysql-connector-j-9.0.0.jar" ProjeRepository
-java -cp ".;JarFile\mysql-connector-j-9.0.0.jar" ProjeYonetimUI
+java -cp ".;JarFile\mysql-connector-j-9.0.0.jar" GirisEkrani
 
 MySql kodları aşağıdadır:
 
