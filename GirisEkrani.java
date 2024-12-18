@@ -48,37 +48,165 @@ public class GirisEkrani {
 class AnaMenu {
     public static void main(String[] args) {
         JFrame frame = new JFrame("Ana Menü");
-        frame.setSize(400, 300);
+        frame.setSize(400, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(5, 1));
+        JPanel panel = new JPanel(new GridLayout(6, 1));
 
         JButton btnProjeEkle = new JButton("Yeni Proje Ekle");
         JButton btnProjeListele = new JButton("Projeleri Listele");
         JButton btnPersonelEkle = new JButton("Yeni Personel Ekle");
         JButton btnPersonelListele = new JButton("Personelleri Listele");
+        JButton btnGorevEkle = new JButton("Yeni Görev Ekle");
         JButton btnCikis = new JButton("Çıkış");
 
         panel.add(btnProjeEkle);
         panel.add(btnProjeListele);
         panel.add(btnPersonelEkle);
         panel.add(btnPersonelListele);
+        panel.add(btnGorevEkle);
         panel.add(btnCikis);
 
         frame.add(panel);
 
         btnProjeEkle.addActionListener(e -> ProjeEkle.main(null));
-
         btnProjeListele.addActionListener(e -> ProjeListele.main(null));
-
         btnPersonelEkle.addActionListener(e -> PersonelEkle.main(null));
-
         btnPersonelListele.addActionListener(e -> PersonelListele.main(null));
+        btnGorevEkle.addActionListener(e -> GorevEkle.main(null));
 
         btnCikis.addActionListener(e -> {
             frame.dispose();
             GirisEkrani.main(null);
+        });
+
+        frame.setVisible(true);
+    }
+}
+
+class GorevEkle {
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Görev İşlemleri");
+        frame.setSize(400, 300);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel(new GridLayout(2, 1));
+
+        JButton btnGorevEkle = new JButton("Görev Ekle");
+        JButton btnGorevAtama = new JButton("Görev Atama");
+
+        panel.add(btnGorevEkle);
+        panel.add(btnGorevAtama);
+
+        frame.add(panel);
+
+        btnGorevEkle.addActionListener(e -> acGorevEklePenceresi());
+        btnGorevAtama.addActionListener(e -> acGorevAtamaPenceresi());
+
+        frame.setVisible(true);
+    }
+
+    private static void acGorevEklePenceresi() {
+        JFrame frame = new JFrame("Yeni Görev Ekle");
+        frame.setSize(400, 300);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel(new GridLayout(5, 2));
+
+        JLabel lblAd = new JLabel("Görev Adı:");
+        JTextField txtAd = new JTextField();
+        JLabel lblBaslangic = new JLabel("Başlangıç Tarihi (YYYY-MM-DD):");
+        JTextField txtBaslangic = new JTextField();
+        JLabel lblBitis = new JLabel("Bitiş Tarihi (YYYY-MM-DD):");
+        JTextField txtBitis = new JTextField();
+        JLabel lblAdamGun = new JLabel("Adam Gün:");
+        JTextField txtAdamGun = new JTextField();
+
+        JButton btnKaydet = new JButton("Kaydet");
+
+        panel.add(lblAd);
+        panel.add(txtAd);
+        panel.add(lblBaslangic);
+        panel.add(txtBaslangic);
+        panel.add(lblBitis);
+        panel.add(txtBitis);
+        panel.add(lblAdamGun);
+        panel.add(txtAdamGun);
+        panel.add(btnKaydet);
+
+        frame.add(panel);
+
+        btnKaydet.addActionListener(e -> {
+            int projeId = 0;
+            int calisanId = 0;
+            String ad = txtAd.getText();
+            String durum = null;
+            String baslangic = txtBaslangic.getText();
+            String bitis = txtBitis.getText();
+            int adamGun = Integer.parseInt(txtAdamGun.getText());
+
+            GorevRepository repository = new GorevRepository();
+            repository.gorevEkle(projeId, calisanId, ad, durum, baslangic, bitis, adamGun);
+
+            JOptionPane.showMessageDialog(frame, "Görev başarıyla eklendi.", "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+            frame.dispose();
+        });
+
+        frame.setVisible(true);
+    }
+
+    private static void acGorevAtamaPenceresi() {
+        JFrame frame = new JFrame("Görev Atama");
+        frame.setSize(400, 300);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel(new GridLayout(3, 2));
+
+        JLabel lblPersonel = new JLabel("Personel Adı:");
+        JComboBox<String> cmbPersonel = new JComboBox<>();
+        JLabel lblProje = new JLabel("Proje Adı:");
+        JComboBox<String> cmbProje = new JComboBox<>();
+
+        JButton btnAtama = new JButton("Ata");
+
+        // Veri tabanından personel ve proje adlarını yükle
+        CalisanRepository calisanRepo = new CalisanRepository();
+        List<String> personelListesi = calisanRepo.calisanListele();
+        for (String personel : personelListesi) {
+            cmbPersonel.addItem(personel);
+        }
+
+        ProjeRepository projeRepo = new ProjeRepository();
+        List<String> projeListesi = projeRepo.projeListele();
+        for (String proje : projeListesi) {
+            cmbProje.addItem(proje);
+        }
+
+        panel.add(lblPersonel);
+        panel.add(cmbPersonel);
+        panel.add(lblProje);
+        panel.add(cmbProje);
+        panel.add(btnAtama);
+
+        frame.add(panel);
+
+        btnAtama.addActionListener(e -> {
+            String secilenPersonel = (String) cmbPersonel.getSelectedItem();
+            String secilenProje = (String) cmbProje.getSelectedItem();
+
+            if (secilenPersonel != null && secilenProje != null) {
+                GorevRepository repository = new GorevRepository();
+                repository.gorevAta(secilenPersonel, secilenProje);
+
+                JOptionPane.showMessageDialog(frame, "Görev başarıyla atandı.", "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                frame.dispose();
+            } else {
+                JOptionPane.showMessageDialog(frame, "Lütfen seçim yapınız!", "Hata", JOptionPane.ERROR_MESSAGE);
+            }
         });
 
         frame.setVisible(true);
