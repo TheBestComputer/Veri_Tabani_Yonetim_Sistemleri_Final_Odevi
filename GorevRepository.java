@@ -1,5 +1,3 @@
-
-import java.awt.*;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -7,26 +5,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.*;
 
 class GorevRepository {
 
-    public static void main(String[] args) {
-        GorevRepository repository = new GorevRepository();
-
-        // Proje ekleme örneği
-        repository.gorevEkle(1, 1, "Yeni Proje", "Devam Ediyor", Date.valueOf("2024-01-01"), Date.valueOf("2024-12-31"), 100);
-
-        // Proje listeleme örneği
-        List<String> gorevler = repository.gorevListele();
-        for (String gorev : gorevler) {
-            System.out.println(gorev);
-        }
-        repository.gorevDurumuGuncelle(1);
-    }
-
     public void gorevEkle(int projeId, int calisanId, String ad, String durum, Date baslangicTarihi, Date bitisTarihi, int adamGun) {
-        String sql = "INSERT INTO Gorevler (int projeId, int calisanId, String ad, String durum, Date baslangicTarihi, Date bitisTarihi, int adamGun) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Gorevler (ProjeId, CalisanId, Ad, Durum, BaslangicTarihi, BitisTarihi, AdamGun) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, projeId);
@@ -109,119 +92,19 @@ class GorevRepository {
             e.printStackTrace();
         }
     }
-        public void projeGorevIslemleri(String projeAdi) {
-        JFrame frame = new JFrame("Proje Görev İşlemleri");
-        frame.setSize(300, 200);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(4, 1));
-
-        JButton btnGorevEkle = new JButton("Görev Ekle");
-        JButton btnGorevListele = new JButton("Görevleri Listele");
-        JButton btnGorevGuncelle = new JButton("Görev Durumunu Güncelle");
-
-        panel.add(btnGorevEkle);
-        panel.add(btnGorevListele);
-        panel.add(btnGorevGuncelle);
-
-        frame.add(panel);
-
-        btnGorevEkle.addActionListener(e -> {
-            JFrame gorevEkleFrame = new JFrame("Yeni Görev Ekle");
-            gorevEkleFrame.setSize(300, 300);
-            gorevEkleFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            gorevEkleFrame.setLocationRelativeTo(null);
-
-            JPanel gorevPanel = new JPanel(new GridLayout(7, 2));
-
-            JLabel lblAd = new JLabel("Görev Adı:");
-            JTextField txtAd = new JTextField();
-            JLabel lblCalisan = new JLabel("Çalışan Seç:");
-            JComboBox<String> cmbCalisan = new JComboBox<>();
-            loadCalisanlar(cmbCalisan); // Çalışanları yükle
-            JLabel lblDurum = new JLabel("Durum:");
-            String[] durumlar = {"Tamamlanacak", "Devam Ediyor", "Tamamlandı"};
-            JComboBox<String> cmbDurum = new JComboBox<>(durumlar);
-            JLabel lblBaslangic = new JLabel("Başlangıç Tarihi (YYYY-MM-DD):");
-            JTextField txtBaslangic = new JTextField();
-            JLabel lblBitis = new JLabel("Bitiş Tarihi (YYYY-MM-DD):");
-            JTextField txtBitis = new JTextField();
-            JLabel lblAdamGun = new JLabel("Adam Gün:");
-            JTextField txtAdamGun = new JTextField();
-
-            JButton btnKaydet = new JButton("Kaydet");
-
-            gorevPanel.add(lblAd);
-            gorevPanel.add(txtAd);
-            gorevPanel.add(lblCalisan);
-            gorevPanel.add(cmbCalisan);
-            gorevPanel.add(lblDurum);
-            gorevPanel.add(cmbDurum);
-            gorevPanel.add(lblBaslangic);
-            gorevPanel.add(txtBaslangic);
-            gorevPanel.add(lblBitis);
-            gorevPanel.add(txtBitis);
-            gorevPanel.add(lblAdamGun);
-            gorevPanel.add(txtAdamGun);
-            gorevPanel.add(btnKaydet);
-
-            gorevEkleFrame.add(gorevPanel);
-
-            btnKaydet.addActionListener(ev -> {
-                String gorevAdi = txtAd.getText();
-                String durum = (String) cmbDurum.getSelectedItem(); // Seçilen durumu al
-                int calisanId = cmbCalisan.getSelectedIndex() + 1; // Seçilen çalışanı al
-                Date baslangicTarihi = Date.valueOf(txtBaslangic.getText());
-                Date bitisTarihi = Date.valueOf(txtBitis.getText());
-                int adamGun = Integer.parseInt(txtAdamGun.getText());
-
-                // Veritabanına görev ekleme işlemi
-                gorevEkle(1, calisanId, gorevAdi, durum, baslangicTarihi, bitisTarihi, adamGun);
-                JOptionPane.showMessageDialog(gorevEkleFrame, "Görev başarıyla eklendi.");
-
-                gorevEkleFrame.dispose(); // Yeni görev ekleme penceresini kapat
-            });
-
-            gorevEkleFrame.setVisible(true);
-        });
-
-        btnGorevListele.addActionListener(e -> {
-            List<String> gorevler = gorevListele();
-            StringBuilder sb = new StringBuilder();
-            for (String gorev : gorevler) {
-                sb.append(gorev).append("\n");
-            }
-            JTextArea textArea = new JTextArea(sb.toString());
-            textArea.setEditable(false);
-            JOptionPane.showMessageDialog(frame, new JScrollPane(textArea), "Görev Listesi", JOptionPane.INFORMATION_MESSAGE);
-        });
-
-        btnGorevGuncelle.addActionListener(e -> {
-            String gorevIdStr = JOptionPane.showInputDialog(frame, "Görev ID'sini girin:");
-            try {
-                int gorevId = Integer.parseInt(gorevIdStr);
-                gorevDurumuGuncelle(gorevId);
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(frame, "Geçersiz Görev ID'si.");
-            }
-        });
-
-        frame.setVisible(true);
-    }
-
-    // Çalışanları yüklemek için fonksiyon
-    private void loadCalisanlar(JComboBox<String> cmbCalisan) {
+    public List<String> loadCalisanlar() {
         String sql = "SELECT Id, Ad, Soyad FROM Calisanlar";
+        List<String> calisanlar = new ArrayList<>();
         try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 int calisanId = rs.getInt("Id");
                 String calisanAdi = rs.getString("Ad") + " " + rs.getString("Soyad");
-                cmbCalisan.addItem(calisanAdi); // Çalışan adını ekle
+                calisanlar.add(calisanAdi);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    
+        return calisanlar;
     }
 }

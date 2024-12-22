@@ -1,8 +1,12 @@
-import javax.swing.*;
 import java.awt.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import javax.swing.*;
 
 public class GirisEkrani {
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(GirisEkrani::girisEkrani);
     }
@@ -46,24 +50,27 @@ public class GirisEkrani {
 }
 
 class AnaMenu {
+
     public static void main(String[] args) {
         JFrame frame = new JFrame("Ana Menü");
-        frame.setSize(400, 300);
+        frame.setSize(400, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(5, 1));
+        JPanel panel = new JPanel(new GridLayout(6, 1));
 
         JButton btnProjeEkle = new JButton("Yeni Proje Ekle");
         JButton btnProjeListele = new JButton("Projeleri Listele");
         JButton btnPersonelEkle = new JButton("Yeni Personel Ekle");
         JButton btnPersonelListele = new JButton("Personelleri Listele");
+        JButton btnGorevYonetimi = new JButton("Görev Yönetimi");
         JButton btnCikis = new JButton("Çıkış");
 
         panel.add(btnProjeEkle);
         panel.add(btnProjeListele);
         panel.add(btnPersonelEkle);
         panel.add(btnPersonelListele);
+        panel.add(btnGorevYonetimi);
         panel.add(btnCikis);
 
         frame.add(panel);
@@ -76,6 +83,8 @@ class AnaMenu {
 
         btnPersonelListele.addActionListener(e -> PersonelListele.main(null));
 
+        btnGorevYonetimi.addActionListener(e -> GorevYonetimi.main(null));
+
         btnCikis.addActionListener(e -> {
             frame.dispose();
             GirisEkrani.main(null);
@@ -86,6 +95,7 @@ class AnaMenu {
 }
 
 class PersonelEkle {
+
     public static void main(String[] args) {
         JFrame frame = new JFrame("Yeni Personel Ekle");
         frame.setSize(300, 300);
@@ -129,6 +139,7 @@ class PersonelEkle {
 }
 
 class PersonelListele {
+
     public static void main(String[] args) {
         JFrame frame = new JFrame("Personelleri Listele");
         frame.setSize(400, 300);
@@ -156,6 +167,7 @@ class PersonelListele {
 }
 
 class ProjeEkle {
+
     public static void main(String[] args) {
         JFrame frame = new JFrame("Yeni Proje Ekle");
         frame.setSize(300, 300);
@@ -199,6 +211,7 @@ class ProjeEkle {
 }
 
 class ProjeListele {
+
     public static void main(String[] args) {
         JFrame frame = new JFrame("Projeleri Listele");
         frame.setSize(400, 300);
@@ -221,6 +234,176 @@ class ProjeListele {
         panel.add(new JScrollPane(txtArea));
 
         frame.add(panel);
+        frame.setVisible(true);
+    }
+}
+
+class GorevYonetimi {
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Görev Yönetimi");
+        frame.setSize(400, 300);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel(new GridLayout(3, 1));
+
+        JButton btnGorevEkle = new JButton("Yeni Görev Ekle");
+        JButton btnGorevListele = new JButton("Görevleri Listele");
+        JButton btnGorevDurumGuncelle = new JButton("Görev Durumunu Güncelle");
+
+        panel.add(btnGorevEkle);
+        panel.add(btnGorevListele);
+        panel.add(btnGorevDurumGuncelle);
+
+        frame.add(panel);
+
+        btnGorevEkle.addActionListener(e -> GorevEkle.main(null));
+
+        btnGorevListele.addActionListener(e -> GorevListele.main(null));
+
+        btnGorevDurumGuncelle.addActionListener(e -> {
+            String gorevIdStr = JOptionPane.showInputDialog(frame, "Görev ID'sini girin:");
+            try {
+                int gorevId = Integer.parseInt(gorevIdStr);
+                GorevRepository repository = new GorevRepository();
+                repository.gorevDurumuGuncelle(gorevId);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(frame, "Geçersiz Görev ID'si.");
+            }
+        });
+
+        frame.setVisible(true);
+    }
+}
+
+class GorevListele {
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Görevleri Listele");
+        frame.setSize(400, 300);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel();
+        JTextArea txtArea = new JTextArea(10, 30);
+        txtArea.setEditable(false);
+
+        GorevRepository repository = new GorevRepository();
+        List<String> gorevler = repository.gorevListele();
+
+        StringBuilder sb = new StringBuilder();
+        for (String gorev : gorevler) {
+            sb.append(gorev).append("\n");
+        }
+        txtArea.setText(sb.toString());
+
+        panel.add(new JScrollPane(txtArea));
+        frame.add(panel);
+
+        frame.setVisible(true);
+    }
+}
+
+class GorevEkle {
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Yeni Görev Ekle");
+        frame.setSize(400, 400);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel(new GridLayout(8, 2));
+
+        JLabel lblProjeId = new JLabel("Proje ID:");
+        JComboBox<String> comboProjeId = new JComboBox<>();
+        JLabel lblPersonelId = new JLabel("Personel ID:");
+        JComboBox<String> comboPersonelId = new JComboBox<>();
+        JLabel lblGorevAdi = new JLabel("Görev Adı:");
+        JTextField txtGorevAdi = new JTextField();
+        JLabel lblDurum = new JLabel("Durum:");
+        JComboBox<String> comboDurum = new JComboBox<>(new String[]{"Tamamlanacak", "Devam Ediyor", "Tamamlandı"});
+        JLabel lblBaslangicTarihi = new JLabel("Başlangıç Tarihi (YYYY-MM-DD):");
+        JTextField txtBaslangicTarihi = new JTextField();
+        JLabel lblBitisTarihi = new JLabel("Bitiş Tarihi (YYYY-MM-DD):");
+        JTextField txtBitisTarihi = new JTextField();
+        JLabel lblAdamGun = new JLabel("Adam Gün:");
+        JTextField txtAdamGun = new JTextField();
+
+        JButton btnKaydet = new JButton("Kaydet");
+
+        panel.add(lblProjeId);
+        panel.add(comboProjeId);
+        panel.add(lblPersonelId);
+        panel.add(comboPersonelId);
+        panel.add(lblGorevAdi);
+        panel.add(txtGorevAdi);
+        panel.add(lblDurum);
+        panel.add(comboDurum);
+        panel.add(lblBaslangicTarihi);
+        panel.add(txtBaslangicTarihi);
+        panel.add(lblBitisTarihi);
+        panel.add(txtBitisTarihi);
+        panel.add(lblAdamGun);
+        panel.add(txtAdamGun);
+        panel.add(btnKaydet);
+
+        frame.add(panel);
+
+        // Populate the combo boxes with project and personnel IDs from repositories
+        ProjeRepository projeRepository = new ProjeRepository();
+        List<String> projeList = projeRepository.projeListele();  // Assuming this returns project IDs as strings
+        for (String proje : projeList) {
+            comboProjeId.addItem(proje);  // Populate the combo box with project IDs
+        }
+
+        CalisanRepository calisanRepository = new CalisanRepository();
+        List<String> personelList = calisanRepository.calisanListele();  // Assuming this returns personnel IDs as strings
+        for (String personel : personelList) {
+            comboPersonelId.addItem(personel);  // Populate the combo box with employee IDs
+        }
+        btnKaydet.addActionListener(e -> {
+            try {
+                String projeIdStr = (String) comboProjeId.getSelectedItem();
+                String personelIdStr = (String) comboPersonelId.getSelectedItem();
+                String gorevAdi = txtGorevAdi.getText();
+                String durum = (String) comboDurum.getSelectedItem();
+                String adamGunStr = txtAdamGun.getText();
+
+                // Validate that the fields are not empty
+                if (projeIdStr == null || projeIdStr.isEmpty() || personelIdStr == null || personelIdStr.isEmpty() || adamGunStr.isEmpty()) {
+                    JOptionPane.showMessageDialog(frame, "Lütfen tüm alanları doldurun!", "Hata", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Convert selected IDs to integers
+                int projeId = Integer.parseInt(projeIdStr);  // Can throw NumberFormatException if input is not a valid number
+                int personelId = Integer.parseInt(personelIdStr);
+                int adamGun = Integer.parseInt(adamGunStr);  // Can throw NumberFormatException if input is not a valid number
+
+                // Parse the dates
+                Date baslangicTarihiUtil = new SimpleDateFormat("yyyy-MM-dd").parse(txtBaslangicTarihi.getText());
+                Date bitisTarihiUtil = new SimpleDateFormat("yyyy-MM-dd").parse(txtBitisTarihi.getText());
+
+                // Convert to java.sql.Date
+                java.sql.Date baslangicTarihi = new java.sql.Date(baslangicTarihiUtil.getTime());
+                java.sql.Date bitisTarihi = new java.sql.Date(bitisTarihiUtil.getTime());
+
+                // Create the task and add it to the repository
+                GorevRepository repository = new GorevRepository();
+                repository.gorevEkle(projeId, personelId, gorevAdi, durum, baslangicTarihi, bitisTarihi, adamGun);
+
+                JOptionPane.showMessageDialog(frame, "Görev başarıyla eklendi.", "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                frame.dispose();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(frame, "Lütfen geçerli bir sayı girin!", "Hata", JOptionPane.ERROR_MESSAGE);
+            } catch (ParseException ex) {
+                JOptionPane.showMessageDialog(frame, "Tarih formatı hatalı! YYYY-MM-DD formatını kullanın.", "Hata", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame, "Beklenmedik bir hata oluştu: " + ex.getMessage(), "Hata", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
         frame.setVisible(true);
     }
 }
