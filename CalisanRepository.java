@@ -3,7 +3,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 class CalisanRepository {
     public static void main(String[] args) {
@@ -22,7 +24,7 @@ class CalisanRepository {
     public void calisanEkle(String ad, String soyad, String email) {
         String sql = "INSERT INTO Calisanlar (Ad, Soyad, Email) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, ad);
             stmt.setString(2, soyad);
@@ -35,12 +37,29 @@ class CalisanRepository {
         }
     }
 
+    public Map<Integer, String> calisanIdListele() {
+        Map<Integer, String> calisanMap = new LinkedHashMap<>();
+        String sql = "SELECT Id, CONCAT(Ad, ' ', Soyad) AS AdSoyad FROM Calisanlar";
+
+        try (Connection conn = DatabaseHelper.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                calisanMap.put(rs.getInt("Id"), rs.getString("AdSoyad"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return calisanMap;
+    }
+
     public List<String> calisanListele() {
         String sql = "SELECT * FROM Calisanlar";
         List<String> calisanlar = new ArrayList<>();
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 String ad = rs.getString("Ad");

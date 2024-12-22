@@ -8,7 +8,8 @@ import java.util.List;
 
 class GorevRepository {
 
-    public void gorevEkle(int projeId, int calisanId, String ad, String durum, Date baslangicTarihi, Date bitisTarihi, int adamGun) {
+    public void gorevEkle(int projeId, int calisanId, String ad, String durum, Date baslangicTarihi, Date bitisTarihi,
+            int adamGun) {
         String sql = "INSERT INTO Gorevler (ProjeId, CalisanId, Ad, Durum, BaslangicTarihi, BitisTarihi, AdamGun) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -34,7 +35,9 @@ class GorevRepository {
                 + "JOIN Calisanlar c ON g.CalisanId = c.Id "
                 + "JOIN Projeler p ON g.ProjeId = p.Id";
         List<String> gorevler = new ArrayList<>();
-        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseHelper.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 int id = rs.getInt("Id");
@@ -48,7 +51,10 @@ class GorevRepository {
                 String projeAd = rs.getString("ProjeAd");
                 int gecikmeSuresi = rs.getInt("GecikmeSuresi");
 
-                gorevler.add("Görev ID: " + id + ", Görev Adı: " + gorevAd + ", Durum: " + durum + ", Başlangıç Tarihi: " + baslangicTarihi + ", Bitiş Tarihi: " + bitisTarihi + ", Adam Gün: " + adamGun + ", Çalışan: " + calisanAd + " " + calisanSoyad + ", Proje: " + projeAd + ", Gecikme Süresi: " + (gecikmeSuresi < 0 ? 0 : gecikmeSuresi) + " gün");
+                gorevler.add("Görev ID: " + id + ", Görev Adı: " + gorevAd + ", Durum: " + durum
+                        + ", Başlangıç Tarihi: " + baslangicTarihi + ", Bitiş Tarihi: " + bitisTarihi + ", Adam Gün: "
+                        + adamGun + ", Çalışan: " + calisanAd + " " + calisanSoyad + ", Proje: " + projeAd
+                        + ", Gecikme Süresi: " + (gecikmeSuresi < 0 ? 0 : gecikmeSuresi) + " gün");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -59,7 +65,9 @@ class GorevRepository {
     public void gorevDurumuGuncelle(int gorevId) {
         String selectSql = "SELECT BitisTarihi, Durum FROM Gorevler WHERE Id = ?";
         String updateSql = "UPDATE Gorevler SET Durum = ? WHERE Id = ?";
-        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement selectStmt = conn.prepareStatement(selectSql); PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+        try (Connection conn = DatabaseHelper.getConnection();
+                PreparedStatement selectStmt = conn.prepareStatement(selectSql);
+                PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
 
             selectStmt.setInt(1, gorevId);
             try (ResultSet rs = selectStmt.executeQuery()) {
@@ -96,7 +104,9 @@ class GorevRepository {
     public List<String> loadCalisanlar() {
         String sql = "SELECT Id, Ad, Soyad FROM Calisanlar";
         List<String> calisanlar = new ArrayList<>();
-        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseHelper.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 int calisanId = rs.getInt("Id");
                 String calisanAdi = rs.getString("Ad") + " " + rs.getString("Soyad");

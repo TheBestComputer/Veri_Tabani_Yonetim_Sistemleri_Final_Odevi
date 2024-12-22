@@ -3,6 +3,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+
 import javax.swing.*;
 
 public class GirisEkrani {
@@ -41,7 +43,8 @@ public class GirisEkrani {
                 frame.dispose();
                 AnaMenu.main(null);
             } else {
-                JOptionPane.showMessageDialog(frame, "Hatalı kullanıcı adı veya şifre!", "Hata", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Hatalı kullanıcı adı veya şifre!", "Hata",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -130,7 +133,8 @@ class PersonelEkle {
 
             CalisanRepository repository = new CalisanRepository();
             repository.calisanEkle(ad, soyad, email);
-            JOptionPane.showMessageDialog(frame, "Personel başarıyla eklendi.", "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "Personel başarıyla eklendi.", "Başarılı",
+                    JOptionPane.INFORMATION_MESSAGE);
             frame.dispose();
         });
 
@@ -202,7 +206,8 @@ class ProjeEkle {
 
             ProjeRepository repository = new ProjeRepository();
             repository.projeEkle(ad, baslangic, bitis);
-            JOptionPane.showMessageDialog(frame, "Proje başarıyla eklendi.", "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "Proje başarıyla eklendi.", "Başarılı",
+                    JOptionPane.INFORMATION_MESSAGE);
             frame.dispose();
         });
 
@@ -322,7 +327,7 @@ class GorevEkle {
         JLabel lblGorevAdi = new JLabel("Görev Adı:");
         JTextField txtGorevAdi = new JTextField();
         JLabel lblDurum = new JLabel("Durum:");
-        JComboBox<String> comboDurum = new JComboBox<>(new String[]{"Tamamlanacak", "Devam Ediyor", "Tamamlandı"});
+        JComboBox<String> comboDurum = new JComboBox<>(new String[] { "Tamamlanacak", "Devam Ediyor", "Tamamlandı" });
         JLabel lblBaslangicTarihi = new JLabel("Başlangıç Tarihi (YYYY-MM-DD):");
         JTextField txtBaslangicTarihi = new JTextField();
         JLabel lblBitisTarihi = new JLabel("Bitiş Tarihi (YYYY-MM-DD):");
@@ -350,36 +355,53 @@ class GorevEkle {
 
         frame.add(panel);
 
-        // Populate the combo boxes with project and personnel IDs from repositories
         ProjeRepository projeRepository = new ProjeRepository();
-        List<String> projeList = projeRepository.projeListele();  // Assuming this returns project IDs as strings
-        for (String proje : projeList) {
-            comboProjeId.addItem(proje);  // Populate the combo box with project IDs
+        Map<Integer, String> projeMap = projeRepository.projeIdListele();
+        CalisanRepository calisanRepository = new CalisanRepository();
+        Map<Integer, String> calisanMap = calisanRepository.calisanIdListele();
+
+        // Proje ve çalışan adlarını ComboBox'a ekle
+        for (String projeAd : projeMap.values()) {
+            comboProjeId.addItem(projeAd);
         }
 
-        CalisanRepository calisanRepository = new CalisanRepository();
-        List<String> personelList = calisanRepository.calisanListele();  // Assuming this returns personnel IDs as strings
-        for (String personel : personelList) {
-            comboPersonelId.addItem(personel);  // Populate the combo box with employee IDs
+        for (String calisanAd : calisanMap.values()) {
+            comboPersonelId.addItem(calisanAd);
         }
+
         btnKaydet.addActionListener(e -> {
             try {
-                String projeIdStr = (String) comboProjeId.getSelectedItem();
-                String personelIdStr = (String) comboPersonelId.getSelectedItem();
+                String selectedProjeAd = (String) comboProjeId.getSelectedItem();
+                String selectedCalisanAd = (String) comboPersonelId.getSelectedItem();
                 String gorevAdi = txtGorevAdi.getText();
                 String durum = (String) comboDurum.getSelectedItem();
                 String adamGunStr = txtAdamGun.getText();
 
+                int projeId = -1, calisanId = -1;
+
+                for (Map.Entry<Integer, String> entry : projeMap.entrySet()) {
+                    if (entry.getValue().equals(selectedProjeAd)) {
+                        projeId = entry.getKey();
+                        break;
+                    }
+                }
+
+                for (Map.Entry<Integer, String> entry : calisanMap.entrySet()) {
+                    if (entry.getValue().equals(selectedCalisanAd)) {
+                        calisanId = entry.getKey();
+                        break;
+                    }
+                }
+
                 // Validate that the fields are not empty
-                if (projeIdStr == null || projeIdStr.isEmpty() || personelIdStr == null || personelIdStr.isEmpty() || adamGunStr.isEmpty()) {
-                    JOptionPane.showMessageDialog(frame, "Lütfen tüm alanları doldurun!", "Hata", JOptionPane.ERROR_MESSAGE);
+                if (projeId == -1 || calisanId == -1 || adamGunStr.isEmpty()) {
+                    JOptionPane.showMessageDialog(frame, "Lütfen tüm alanları doldurun!", "Hata",
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                // Convert selected IDs to integers
-                int projeId = Integer.parseInt(projeIdStr);  // Can throw NumberFormatException if input is not a valid number
-                int personelId = Integer.parseInt(personelIdStr);
-                int adamGun = Integer.parseInt(adamGunStr);  // Can throw NumberFormatException if input is not a valid number
+                int adamGun = Integer.parseInt(adamGunStr); // Can throw NumberFormatException if input is not a valid
+                                                            // number
 
                 // Parse the dates
                 Date baslangicTarihiUtil = new SimpleDateFormat("yyyy-MM-dd").parse(txtBaslangicTarihi.getText());
@@ -391,16 +413,20 @@ class GorevEkle {
 
                 // Create the task and add it to the repository
                 GorevRepository repository = new GorevRepository();
-                repository.gorevEkle(projeId, personelId, gorevAdi, durum, baslangicTarihi, bitisTarihi, adamGun);
+                repository.gorevEkle(projeId, calisanId, gorevAdi, durum, baslangicTarihi, bitisTarihi, adamGun);
 
-                JOptionPane.showMessageDialog(frame, "Görev başarıyla eklendi.", "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Görev başarıyla eklendi.", "Başarılı",
+                        JOptionPane.INFORMATION_MESSAGE);
                 frame.dispose();
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(frame, "Lütfen geçerli bir sayı girin!", "Hata", JOptionPane.ERROR_MESSAGE);
-            } catch (ParseException ex) {
-                JOptionPane.showMessageDialog(frame, "Tarih formatı hatalı! YYYY-MM-DD formatını kullanın.", "Hata", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Lütfen geçerli bir sayı girin!", "Hata",
+                        JOptionPane.ERROR_MESSAGE);
+            } catch (IllegalArgumentException ex) {
+                JOptionPane.showMessageDialog(frame, "Tarih formatı hatalı! YYYY-MM-DD formatını kullanın.", "Hata",
+                        JOptionPane.ERROR_MESSAGE);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(frame, "Beklenmedik bir hata oluştu: " + ex.getMessage(), "Hata", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Beklenmedik bir hata oluştu: " + ex.getMessage(), "Hata",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
 

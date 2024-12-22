@@ -3,7 +3,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 class ProjeRepository {
     public static void main(String[] args) {
@@ -22,7 +24,7 @@ class ProjeRepository {
     public void projeEkle(String ad, String baslangicTarihi, String bitisTarihi) {
         String sql = "INSERT INTO Projeler (Ad, BaslangicTarihi, BitisTarihi) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, ad);
             stmt.setString(2, baslangicTarihi);
@@ -35,12 +37,29 @@ class ProjeRepository {
         }
     }
 
+    public Map<Integer, String> projeIdListele() {
+        Map<Integer, String> projeMap = new LinkedHashMap<>();
+        String sql = "SELECT Id, Ad FROM Projeler";
+
+        try (Connection conn = DatabaseHelper.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                projeMap.put(rs.getInt("Id"), rs.getString("Ad"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return projeMap;
+    }
+
     public List<String> projeListele() {
         String sql = "SELECT * FROM Projeler";
         List<String> projeler = new ArrayList<>();
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 String ad = rs.getString("Ad");
