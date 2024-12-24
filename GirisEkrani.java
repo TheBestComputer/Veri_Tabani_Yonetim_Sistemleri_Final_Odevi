@@ -276,7 +276,7 @@ class ProjeListele {
             if (secilenProje != null) {
                 frame.dispose();
                 int projeId = Integer.parseInt(secilenProje.split(" - ")[0]); // Proje ID'sini ayıkla
-                ProjeGorevYonetimi.main(new String[]{String.valueOf(projeId)});
+                GorevEkle.ProjeGorevYonetimi.main(new String[]{String.valueOf(projeId)});
             } else {
                 JOptionPane.showMessageDialog(frame, "Lütfen bir proje seçin!", "Hata", JOptionPane.ERROR_MESSAGE);
             }
@@ -328,7 +328,20 @@ class GorevYonetimi {
 class GorevListele {
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Görevleri Listele");
+        if (args.length == 0) {
+            JOptionPane.showMessageDialog(null, "Proje ID eksik!", "Hata", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        int projeId;
+        try {
+            projeId = Integer.parseInt(args[0]);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Geçersiz Proje ID!", "Hata", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        JFrame frame = new JFrame("Görevleri Listele - Proje ID: " + projeId);
         frame.setSize(400, 300);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
@@ -338,11 +351,15 @@ class GorevListele {
         txtArea.setEditable(false);
 
         GorevRepository repository = new GorevRepository();
-        List<String> gorevler = repository.gorevListele();
+        List<String> gorevler = repository.gorevListeleByProje(projeId);
 
         StringBuilder sb = new StringBuilder();
-        for (String gorev : gorevler) {
-            sb.append(gorev).append("\n");
+        if (gorevler.isEmpty()) {
+            sb.append("Bu projeye ait görev bulunmamaktadır.");
+        } else {
+            for (String gorev : gorevler) {
+                sb.append(gorev).append("\n");
+            }
         }
         txtArea.setText(sb.toString());
 
@@ -363,8 +380,6 @@ class GorevEkle {
 
         JPanel panel = new JPanel(new GridLayout(8, 2));
 
-        JLabel lblProjeId = new JLabel("Proje ID:");
-        JComboBox<String> comboProjeId = new JComboBox<>();
         JLabel lblPersonelId = new JLabel("Personel ID:");
         JComboBox<String> comboPersonelId = new JComboBox<>();
         JLabel lblGorevAdi = new JLabel("Görev Adı:");
@@ -380,8 +395,6 @@ class GorevEkle {
 
         JButton btnKaydet = new JButton("Kaydet");
 
-        panel.add(lblProjeId);
-        panel.add(comboProjeId);
         panel.add(lblPersonelId);
         panel.add(comboPersonelId);
         panel.add(lblGorevAdi);
@@ -397,16 +410,9 @@ class GorevEkle {
         panel.add(btnKaydet);
 
         frame.add(panel);
-
-        ProjeRepository projeRepository = new ProjeRepository();
-        Map<Integer, String> projeMap = projeRepository.projeIdListele();
+        
         CalisanRepository calisanRepository = new CalisanRepository();
         Map<Integer, String> calisanMap = calisanRepository.calisanIdListele();
-
-        // Proje ve çalışan adlarını ComboBox'a ekle
-        for (String projeAd : projeMap.values()) {
-            comboProjeId.addItem(projeAd);
-        }
 
         for (String calisanAd : calisanMap.values()) {
             comboPersonelId.addItem(calisanAd);
@@ -414,20 +420,13 @@ class GorevEkle {
 
         btnKaydet.addActionListener(e -> {
             try {
-                String selectedProjeAd = (String) comboProjeId.getSelectedItem();
+                String selectedProjeId = args[0];
                 String selectedCalisanAd = (String) comboPersonelId.getSelectedItem();
                 String gorevAdi = txtGorevAdi.getText();
                 String durum = (String) comboDurum.getSelectedItem();
                 String adamGunStr = txtAdamGun.getText();
 
-                int projeId = -1, calisanId = -1;
-
-                for (Map.Entry<Integer, String> entry : projeMap.entrySet()) {
-                    if (entry.getValue().equals(selectedProjeAd)) {
-                        projeId = entry.getKey();
-                        break;
-                    }
-                }
+                int calisanId = -1;
 
                 for (Map.Entry<Integer, String> entry : calisanMap.entrySet()) {
                     if (entry.getValue().equals(selectedCalisanAd)) {
@@ -436,8 +435,10 @@ class GorevEkle {
                     }
                 }
 
+                int projeId = Integer.parseInt(selectedProjeId);
+
                 // Validate that the fields are not empty
-                if (projeId == -1 || calisanId == -1 || adamGunStr.isEmpty()) {
+                if (selectedProjeId == "" || selectedProjeId.isEmpty() || calisanId == -1 || adamGunStr.isEmpty()) {
                     JOptionPane.showMessageDialog(frame, "Lütfen tüm alanları doldurun!", "Hata",
                             JOptionPane.ERROR_MESSAGE);
                     return;

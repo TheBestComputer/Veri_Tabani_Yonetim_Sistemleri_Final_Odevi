@@ -10,18 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 class CalisanRepository {
-    public static void main(String[] args) {
-        CalisanRepository repository = new CalisanRepository();
-
-        // Proje ekleme örneği
-        repository.calisanEkle("Alperen", "Sağut", "revengeofzamazingo@gmail.com");
-
-        // Proje listeleme örneği
-        List<String> calisanlar = repository.calisanListele();
-        for (String calisan : calisanlar) {
-            System.out.println(calisan);
-        }
-    }
 
     public void calisanEkle(String ad, String soyad, String email) {
         String sql = "INSERT INTO Calisanlar (Ad, Soyad, Email) VALUES (?, ?, ?)";

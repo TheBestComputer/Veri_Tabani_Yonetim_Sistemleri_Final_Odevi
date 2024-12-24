@@ -10,19 +10,6 @@ import java.util.Map;
 
 class ProjeRepository {
 
-    public static void main(String[] args) {
-        ProjeRepository repository = new ProjeRepository();
-
-        // Proje ekleme örneği
-        repository.projeEkle("Yeni Proje", "2024-12-15", "2025-01-15");
-
-        // Proje listeleme örneği
-        List<String> projeler = repository.projeListele();
-        for (String proje : projeler) {
-            System.out.println(proje);
-        }
-    }
-
     public void projeEkle(String ad, String baslangicTarihi, String bitisTarihi) {
         String sql = "INSERT INTO Projeler (Ad, BaslangicTarihi, BitisTarihi) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -59,10 +46,11 @@ class ProjeRepository {
         try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
+                String id = rs.getString("Id");
                 String ad = rs.getString("Ad");
                 String baslangicTarihi = rs.getString("BaslangicTarihi");
                 String bitisTarihi = rs.getString("BitisTarihi");
-                projeler.add(ad + ": " + baslangicTarihi + " - " + bitisTarihi);
+                projeler.add(id + " - " + ad + " - " + baslangicTarihi + " - " + bitisTarihi);
             }
         } catch (SQLException e) {
             e.printStackTrace();
