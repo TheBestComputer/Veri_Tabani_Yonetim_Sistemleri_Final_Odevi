@@ -1,5 +1,4 @@
 import java.awt.*;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -142,30 +141,59 @@ class PersonelEkle {
     }
 }
 
+
 class PersonelListele {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Personelleri Listele");
-        frame.setSize(400, 300);
+        frame.setSize(600, 400);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
         JPanel panel = new JPanel();
-        JTextArea txtArea = new JTextArea(10, 30);
+        JTextArea txtArea = new JTextArea(15, 40);
         txtArea.setEditable(false);
 
         CalisanRepository repository = new CalisanRepository();
         List<String> personeller = repository.calisanListele();
 
-        StringBuilder sb = new StringBuilder();
-        for (String personel : personeller) {
-            sb.append(personel).append("\n");
-        }
-        txtArea.setText(sb.toString());
+        // Listeleri panelde göster
+        JList<String> personelListesi = new JList<>(personeller.toArray(new String[0]));
+        personelListesi.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        personelListesi.setVisibleRowCount(10);
+        JScrollPane listScroller = new JScrollPane(personelListesi);
+        listScroller.setPreferredSize(new Dimension(250, 80));
 
-        panel.add(new JScrollPane(txtArea));
+        panel.add(listScroller);
 
-        frame.add(panel);
+        // Personel seçildiğinde görev durumu ve tamamlanma durumu gösterilsin
+        personelListesi.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                String selectedPersonel = personelListesi.getSelectedValue();
+                if (selectedPersonel != null) {
+                    int calisanId = Integer.parseInt(selectedPersonel.split(" - ")[0]); // ID'yi ayıklıyoruz
+                    CalisanRepository rapor = new CalisanRepository();
+                    StringBuilder sb = new StringBuilder();
+
+                    // Çalışanın görev durumları
+                    sb.append("Çalışanın Görev Durumları:\n");
+                    rapor.calisanGorevDurumlariniListele(calisanId, sb);
+                    sb.append("\nÇalışanın Görev Tamamlama Durumu:\n");
+                    rapor.calisanGorevTamamlamaDurumu(calisanId, sb);
+
+                    // Ekrana yazdır
+                    txtArea.setText(sb.toString());
+                }
+            }
+        });
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setLayout(new BorderLayout());
+        bottomPanel.add(new JScrollPane(txtArea), BorderLayout.CENTER);
+
+        frame.add(panel, BorderLayout.WEST);
+        frame.add(bottomPanel, BorderLayout.CENTER);
+
         frame.setVisible(true);
     }
 }
