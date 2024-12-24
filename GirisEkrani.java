@@ -1,9 +1,9 @@
+
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 import javax.swing.*;
 
 public class GirisEkrani {
@@ -141,7 +141,6 @@ class PersonelEkle {
     }
 }
 
-
 class PersonelListele {
 
     public static void main(String[] args) {
@@ -252,21 +251,37 @@ class ProjeListele {
         frame.setLocationRelativeTo(null);
 
         JPanel panel = new JPanel();
-        JTextArea txtArea = new JTextArea(10, 30);
-        txtArea.setEditable(false);
+        JList<String> projeListesi = new JList<>();
+        JScrollPane scrollPane = new JScrollPane(projeListesi);
 
         ProjeRepository repository = new ProjeRepository();
         List<String> projeler = repository.projeListele();
+        DefaultListModel<String> model = new DefaultListModel<>();
 
-        StringBuilder sb = new StringBuilder();
         for (String proje : projeler) {
-            sb.append(proje).append("\n");
+            model.addElement(proje);
         }
-        txtArea.setText(sb.toString());
+        projeListesi.setModel(model);
 
-        panel.add(new JScrollPane(txtArea));
+        JButton btnSec = new JButton("Projeyi Seç");
+
+        panel.setLayout(new BorderLayout());
+        panel.add(scrollPane, BorderLayout.CENTER);
+        panel.add(btnSec, BorderLayout.SOUTH);
 
         frame.add(panel);
+
+        btnSec.addActionListener(e -> {
+            String secilenProje = projeListesi.getSelectedValue();
+            if (secilenProje != null) {
+                frame.dispose();
+                int projeId = Integer.parseInt(secilenProje.split(" - ")[0]); // Proje ID'sini ayıkla
+                ProjeGorevYonetimi.main(new String[]{String.valueOf(projeId)});
+            } else {
+                JOptionPane.showMessageDialog(frame, "Lütfen bir proje seçin!", "Hata", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
         frame.setVisible(true);
     }
 }
@@ -355,7 +370,7 @@ class GorevEkle {
         JLabel lblGorevAdi = new JLabel("Görev Adı:");
         JTextField txtGorevAdi = new JTextField();
         JLabel lblDurum = new JLabel("Durum:");
-        JComboBox<String> comboDurum = new JComboBox<>(new String[] { "Tamamlanacak", "Devam Ediyor", "Tamamlandı" });
+        JComboBox<String> comboDurum = new JComboBox<>(new String[]{"Tamamlanacak", "Devam Ediyor", "Tamamlandı"});
         JLabel lblBaslangicTarihi = new JLabel("Başlangıç Tarihi (YYYY-MM-DD):");
         JTextField txtBaslangicTarihi = new JTextField();
         JLabel lblBitisTarihi = new JLabel("Bitiş Tarihi (YYYY-MM-DD):");
@@ -429,7 +444,7 @@ class GorevEkle {
                 }
 
                 int adamGun = Integer.parseInt(adamGunStr); // Can throw NumberFormatException if input is not a valid
-                                                            // number
+                // number
 
                 // Parse the dates
                 Date baslangicTarihiUtil = new SimpleDateFormat("yyyy-MM-dd").parse(txtBaslangicTarihi.getText());
@@ -459,5 +474,43 @@ class GorevEkle {
         });
 
         frame.setVisible(true);
+    }
+
+    public class ProjeGorevYonetimi {
+        public static void main(String[] args) {
+            int projeId = Integer.parseInt(args[0]);
+
+            JFrame frame = new JFrame("Görev Yönetimi - Proje ID: " + projeId);
+            frame.setSize(500, 400);
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.setLocationRelativeTo(null);
+
+            JPanel panel = new JPanel(new GridLayout(3, 1));
+
+            JButton btnGorevEkle = new JButton("Yeni Görev Ekle");
+            JButton btnGorevListele = new JButton("Görevleri Listele");
+            JButton btnGeriDon = new JButton("Geri Dön");
+
+            panel.add(btnGorevEkle);
+            panel.add(btnGorevListele);
+            panel.add(btnGeriDon);
+
+            frame.add(panel);
+
+            btnGorevEkle.addActionListener(e -> {
+                GorevEkle.main(new String[]{String.valueOf(projeId)});
+            });
+
+            btnGorevListele.addActionListener(e -> {
+                GorevListele.main(new String[]{String.valueOf(projeId)});
+            });
+
+            btnGeriDon.addActionListener(e -> {
+                frame.dispose();
+                ProjeListele.main(null);
+            });
+
+            frame.setVisible(true);
+        }
     }
 }
