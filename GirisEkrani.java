@@ -1,5 +1,6 @@
-
+import java.awt.event.ActionEvent;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -622,14 +623,16 @@ class GorevEkle {
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             frame.setLocationRelativeTo(null);
 
-            JPanel panel = new JPanel(new GridLayout(3, 1));
+            JPanel panel = new JPanel(new GridLayout(4, 1));
 
             JButton btnGorevEkle = new JButton("Yeni Görev Ekle");
             JButton btnGorevListele = new JButton("Görevleri Listele");
+            JButton btnGorevDurumGuncelle = new JButton("Görev Durum Güncelle");
             JButton btnGeriDon = new JButton("Geri Dön");
 
             panel.add(btnGorevEkle);
             panel.add(btnGorevListele);
+            panel.add(btnGorevDurumGuncelle);
             panel.add(btnGeriDon);
 
             frame.add(panel);
@@ -642,6 +645,10 @@ class GorevEkle {
                 GorevListele.main(new String[]{String.valueOf(projeId)});
             });
 
+            btnGorevDurumGuncelle.addActionListener(e -> {
+                GorevDurumuGuncelle.main(new String[]{String.valueOf(projeId)});
+            });
+
             btnGeriDon.addActionListener(e -> {
                 frame.dispose();
                 ProjeListele.main(null);
@@ -649,5 +656,70 @@ class GorevEkle {
 
             frame.setVisible(true);
         }
+    }
+}
+
+class GorevDurumuGuncelle {
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Görev Durumu Güncelle");
+        frame.setSize(400, 200);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel(new GridLayout(3, 1));
+
+        // Görevler ComboBox
+        JLabel lblGorevSec = new JLabel("Görev Seç:");
+        JComboBox<String> cbGorevler = new JComboBox<>();
+
+        // Güncelle Butonu
+        JButton btnGuncelle = new JButton("Durumu Güncelle");
+
+        panel.add(lblGorevSec);
+        panel.add(cbGorevler);
+        panel.add(btnGuncelle);
+
+        frame.add(panel);
+
+        // Proje ID'yi argümanlardan al ve görevleri yükle
+        try {
+            int projeId = Integer.parseInt(args[0]); // Proje ID komut satırından alınır
+            GorevRepository repository = new GorevRepository();
+            List<String> gorevler = repository.gorevListeleByProje(projeId);
+
+            // ComboBox'a görevleri ekle
+            for (String gorev : gorevler) {
+                cbGorevler.addItem(gorev);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(frame, "Görevler yüklenirken bir hata oluştu: " + ex.getMessage(),
+                                          "Hata", JOptionPane.ERROR_MESSAGE);
+        }
+
+        // Görev durumu güncelleme işlemi
+        btnGuncelle.addActionListener(e -> {
+            try {
+                String gorevAdi = (String) cbGorevler.getSelectedItem();
+                if (gorevAdi == null || gorevAdi.isEmpty()) {
+                    throw new Exception("Görev seçilmedi.");
+                }
+                int startIndex = gorevAdi.indexOf(':') + 2; // '[' sonrası
+                int endIndex = gorevAdi.indexOf(',');      // ']' öncesi
+
+                String sonuc = gorevAdi.substring(startIndex, endIndex);
+                int gorevId = Integer.parseInt(sonuc); // Görev ID'yi görev adından ayır
+                GorevRepository repository = new GorevRepository();
+                repository.gorevDurumuGuncelle(gorevId);
+
+                JOptionPane.showMessageDialog(frame, "Görev durumu başarıyla güncellendi.",
+                                              "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame, "Bir hata oluştu: " + ex.getMessage(),
+                                              "Hata", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        frame.setVisible(true);
     }
 }
