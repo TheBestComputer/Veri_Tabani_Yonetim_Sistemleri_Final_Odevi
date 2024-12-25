@@ -59,12 +59,14 @@ class AnaMenu {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(6, 1));
+        JPanel panel = new JPanel(new GridLayout(8, 1));
 
         JButton btnProjeEkle = new JButton("Yeni Proje Ekle");
         JButton btnProjeListele = new JButton("Projeleri Listele");
         JButton btnPersonelEkle = new JButton("Yeni Personel Ekle");
         JButton btnPersonelListele = new JButton("Personelleri Listele");
+        JButton btnPersonelSil = new JButton("Personel Sil");
+        JButton btnPersonelGuncelle = new JButton("Personel Güncelle");
         JButton btnGorevYonetimi = new JButton("Görev Yönetimi");
         JButton btnCikis = new JButton("Çıkış");
 
@@ -72,6 +74,8 @@ class AnaMenu {
         panel.add(btnProjeListele);
         panel.add(btnPersonelEkle);
         panel.add(btnPersonelListele);
+        panel.add(btnPersonelSil);
+        panel.add(btnPersonelGuncelle);
         panel.add(btnGorevYonetimi);
         panel.add(btnCikis);
 
@@ -84,6 +88,10 @@ class AnaMenu {
         btnPersonelEkle.addActionListener(e -> PersonelEkle.main(null));
 
         btnPersonelListele.addActionListener(e -> PersonelListele.main(null));
+
+        btnPersonelSil.addActionListener(e -> PersonelSil.main(null));
+
+        btnPersonelGuncelle.addActionListener(e -> PersonelGuncelle.main(null));
 
         btnGorevYonetimi.addActionListener(e -> GorevYonetimi.main(null));
 
@@ -135,6 +143,133 @@ class PersonelEkle {
             JOptionPane.showMessageDialog(frame, "Personel başarıyla eklendi.", "Başarılı",
                     JOptionPane.INFORMATION_MESSAGE);
             frame.dispose();
+        });
+
+        frame.setVisible(true);
+    }
+}
+
+class PersonelSil {
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Personel Sil");
+        frame.setSize(300, 200);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel(new GridLayout(3, 1));
+
+        JLabel lblPersonelId = new JLabel("Silinecek Personeli Seçin:");
+        JComboBox<String> cmbPersonel = new JComboBox<>();
+        JButton btnSil = new JButton("Sil");
+
+        panel.add(lblPersonelId);
+        panel.add(cmbPersonel);
+        panel.add(btnSil);
+
+        frame.add(panel);
+
+        // Personel ID ve Ad Soyad bilgilerini yükle
+        CalisanRepository repository = new CalisanRepository();
+        Map<Integer, String> calisanlar = repository.calisanIdListele();
+
+        // ComboBox'a personel ekleme
+        for (Map.Entry<Integer, String> entry : calisanlar.entrySet()) {
+            cmbPersonel.addItem(entry.getKey() + " - " + entry.getValue());
+        }
+
+        btnSil.addActionListener(e -> {
+            try {
+                // Seçilen item'den ID'yi alma
+                String selectedItem = (String) cmbPersonel.getSelectedItem();
+                if (selectedItem != null) {
+                    int personelId = Integer.parseInt(selectedItem.split(" - ")[0]); // ID kısmını al
+
+                    boolean basarili = repository.calisanSil(personelId);
+
+                    if (basarili) {
+                        JOptionPane.showMessageDialog(frame, "Personel başarıyla silindi.", "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                        cmbPersonel.removeItem(selectedItem); // Silinen personeli combobox'tan çıkar
+                    } else {
+                        JOptionPane.showMessageDialog(frame, "Personel silinemedi. Lütfen ID'yi kontrol edin.", "Hata", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame, "Bir hata oluştu: " + ex.getMessage(), "Hata", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        frame.setVisible(true);
+    }
+}
+
+class PersonelGuncelle {
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Personel Güncelle");
+        frame.setSize(400, 300);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel(new GridLayout(5, 2));
+
+        JLabel lblPersonelId = new JLabel("Güncellenecek Personel:");
+        JComboBox<String> cmbPersonel = new JComboBox<>();
+        JLabel lblYeniAd = new JLabel("Yeni Ad:");
+        JTextField txtYeniAd = new JTextField();
+        JLabel lblYeniSoyad = new JLabel("Yeni Soyad:");
+        JTextField txtYeniSoyad = new JTextField();
+        JLabel lblYeniEmail = new JLabel("Yeni Email:");
+        JTextField txtYeniEmail = new JTextField();
+        JButton btnGuncelle = new JButton("Güncelle");
+
+        panel.add(lblPersonelId);
+        panel.add(cmbPersonel);
+        panel.add(lblYeniAd);
+        panel.add(txtYeniAd);
+        panel.add(lblYeniSoyad);
+        panel.add(txtYeniSoyad);
+        panel.add(lblYeniEmail);
+        panel.add(txtYeniEmail);
+        panel.add(btnGuncelle);
+
+        frame.add(panel);
+
+        // Personel ID ve isim bilgilerini ComboBox'a yükleme
+        CalisanRepository repository = new CalisanRepository();
+        Map<Integer, String> calisanlar = repository.calisanIdListele();
+
+        for (Map.Entry<Integer, String> entry : calisanlar.entrySet()) {
+            cmbPersonel.addItem(entry.getKey() + " - " + entry.getValue());
+        }
+
+        btnGuncelle.addActionListener(e -> {
+            try {
+                // Seçilen personelin ID'sini ComboBox'tan alma
+                String selectedItem = (String) cmbPersonel.getSelectedItem();
+                if (selectedItem != null) {
+                    int personelId = Integer.parseInt(selectedItem.split(" - ")[0]); // ID kısmını al
+                    String yeniAd = txtYeniAd.getText();
+                    String yeniSoyad = txtYeniSoyad.getText();
+                    String yeniEmail = txtYeniEmail.getText();
+
+                    if (yeniAd.isEmpty() || yeniSoyad.isEmpty() || yeniEmail.isEmpty()) {
+                        JOptionPane.showMessageDialog(frame, "Lütfen tüm alanları doldurun!", "Hata", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    boolean basarili = repository.calisanGuncelle(personelId, yeniAd, yeniSoyad, yeniEmail);
+
+                    if (basarili) {
+                        JOptionPane.showMessageDialog(frame, "Personel başarıyla güncellendi.", "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                        frame.dispose();
+                    } else {
+                        JOptionPane.showMessageDialog(frame, "Personel güncellenemedi. Lütfen ID'yi kontrol edin.", "Hata", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame, "Bir hata oluştu: " + ex.getMessage(), "Hata", JOptionPane.ERROR_MESSAGE);
+            }
         });
 
         frame.setVisible(true);
@@ -410,7 +545,7 @@ class GorevEkle {
         panel.add(btnKaydet);
 
         frame.add(panel);
-        
+
         CalisanRepository calisanRepository = new CalisanRepository();
         Map<Integer, String> calisanMap = calisanRepository.calisanIdListele();
 
@@ -478,6 +613,7 @@ class GorevEkle {
     }
 
     public class ProjeGorevYonetimi {
+
         public static void main(String[] args) {
             int projeId = Integer.parseInt(args[0]);
 

@@ -1,3 +1,4 @@
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,8 +14,7 @@ class CalisanRepository {
 
     public void calisanEkle(String ad, String soyad, String email) {
         String sql = "INSERT INTO Calisanlar (Ad, Soyad, Email) VALUES (?, ?, ?)";
-        try (Connection conn = DatabaseHelper.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, ad);
             stmt.setString(2, soyad);
@@ -31,9 +31,7 @@ class CalisanRepository {
         Map<Integer, String> calisanMap = new LinkedHashMap<>();
         String sql = "SELECT Id, CONCAT(Ad, ' ', Soyad) AS AdSoyad FROM Calisanlar";
 
-        try (Connection conn = DatabaseHelper.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql);
-                ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 calisanMap.put(rs.getInt("Id"), rs.getString("AdSoyad"));
@@ -47,9 +45,7 @@ class CalisanRepository {
     public List<String> calisanListele() {
         String sql = "SELECT * FROM Calisanlar";
         List<String> calisanlar = new ArrayList<>();
-        try (Connection conn = DatabaseHelper.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql);
-                ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 int id = rs.getInt("Id");
@@ -64,13 +60,51 @@ class CalisanRepository {
         return calisanlar;
     }
 
+    public boolean calisanSil(int id) {
+        String sql = "DELETE FROM Calisanlar WHERE Id = ?";
+        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            int rowsAffected = stmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("Çalışan başarıyla silindi.");
+            } else {
+                System.out.println("Belirtilen ID'ye sahip bir çalışan bulunamadı.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public boolean calisanGuncelle(int id, String yeniAd, String yeniSoyad, String yeniEmail) {
+        String sql = "UPDATE Calisanlar SET Ad = ?, Soyad = ?, Email = ? WHERE Id = ?";
+        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, yeniAd);
+            stmt.setString(2, yeniSoyad);
+            stmt.setString(3, yeniEmail);
+            stmt.setInt(4, id);
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Çalışan bilgileri başarıyla güncellendi.");
+            } else {
+                System.out.println("Belirtilen ID'ye sahip bir çalışan bulunamadı.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
     public void calisanGorevDurumlariniListele(int calisanId, StringBuilder sb) {
         String sql = "SELECT g.Ad, g.Durum, g.BaslangicTarihi, g.BitisTarihi "
-                   + "FROM Gorevler g "
-                   + "WHERE g.CalisanId = ?";
+                + "FROM Gorevler g "
+                + "WHERE g.CalisanId = ?";
 
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, calisanId);
 
@@ -93,19 +127,18 @@ class CalisanRepository {
 
     public void calisanGorevTamamlamaDurumu(int calisanId, StringBuilder sb) {
         String sql = "SELECT g.Durum, g.BitisTarihi, CURRENT_DATE AS Bugun, "
-                   + "       CASE WHEN g.Durum = 'Tamamlandı' AND g.BitisTarihi >= CURRENT_DATE THEN 'Zamanında Tamamlandı' "
-                   + "            WHEN g.Durum = 'Tamamlandı' AND g.BitisTarihi < CURRENT_DATE THEN 'Geç Tamamlandı' "
-                   + "            ELSE 'Tamamlanmadı' END AS TamamlamaDurumu "
-                   + "FROM Gorevler g "
-                   + "WHERE g.CalisanId = ?";
+                + "       CASE WHEN g.Durum = 'Tamamlandı' AND g.BitisTarihi >= CURRENT_DATE THEN 'Zamanında Tamamlandı' "
+                + "            WHEN g.Durum = 'Tamamlandı' AND g.BitisTarihi < CURRENT_DATE THEN 'Geç Tamamlandı' "
+                + "            ELSE 'Tamamlanmadı' END AS TamamlamaDurumu "
+                + "FROM Gorevler g "
+                + "WHERE g.CalisanId = ?";
 
         Map<String, Integer> tamamlamaDurumuSayaci = new HashMap<>();
         tamamlamaDurumuSayaci.put("Zamanında Tamamlandı", 0);
         tamamlamaDurumuSayaci.put("Geç Tamamlandı", 0);
         tamamlamaDurumuSayaci.put("Tamamlanmadı", 0);
 
-        try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, calisanId);
 
@@ -116,8 +149,8 @@ class CalisanRepository {
                 }
             }
 
-            tamamlamaDurumuSayaci.forEach((durum, sayi) ->
-                    sb.append(String.format("%s: %d\n", durum, sayi)));
+            tamamlamaDurumuSayaci.forEach((durum, sayi)
+                    -> sb.append(String.format("%s: %d\n", durum, sayi)));
 
         } catch (SQLException e) {
             e.printStackTrace();
