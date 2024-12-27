@@ -1,6 +1,4 @@
-import java.awt.event.ActionEvent;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -281,12 +279,12 @@ class PersonelListele {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Personelleri Listele");
-        frame.setSize(600, 400);
+        frame.setSize(900, 700);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
         JPanel panel = new JPanel();
-        JTextArea txtArea = new JTextArea(15, 40);
+        JTextArea txtArea = new JTextArea(400, 700);
         txtArea.setEditable(false);
 
         CalisanRepository repository = new CalisanRepository();
@@ -295,9 +293,9 @@ class PersonelListele {
         // Listeleri panelde göster
         JList<String> personelListesi = new JList<>(personeller.toArray(new String[0]));
         personelListesi.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        personelListesi.setVisibleRowCount(10);
+        personelListesi.setVisibleRowCount(20);
         JScrollPane listScroller = new JScrollPane(personelListesi);
-        listScroller.setPreferredSize(new Dimension(250, 80));
+        listScroller.setPreferredSize(new Dimension(380, 650));
 
         panel.add(listScroller);
 

@@ -29,28 +29,19 @@ class GorevRepository {
         }
     }
 
-    // Genel Görev Listeleme Metodu
-    public List<String> gorevListele() {
-        String sql = "SELECT g.Id, g.Ad, g.Durum, g.BaslangicTarihi, g.BitisTarihi, g.AdamGun, c.Ad AS CalisanAd, " +
-                     "c.Soyad AS CalisanSoyad, p.Ad AS ProjeAd, " +
-                     "DATEDIFF(g.BitisTarihi, CURRENT_DATE) AS GecikmeSuresi " +
-                     "FROM Gorevler g " +
-                     "JOIN Calisanlar c ON g.CalisanId = c.Id " +
-                     "JOIN Projeler p ON g.ProjeId = p.Id";
-        return fetchGorevler(sql);
-    }
-
     // Belirli Projeye Ait Görev Listeleme Metodu
     public List<String> gorevListeleByProje(int projeId) {
-        String sql = "SELECT g.Id, g.Ad, g.Durum, g.BaslangicTarihi, g.BitisTarihi, g.AdamGun, c.Ad AS CalisanAd, " +
-                     "c.Soyad AS CalisanSoyad, p.Ad AS ProjeAd, " +
-                     "DATEDIFF(g.BitisTarihi, CURRENT_DATE) AS GecikmeSuresi " +
-                     "FROM Gorevler g " +
-                     "JOIN Calisanlar c ON g.CalisanId = c.Id " +
-                     "JOIN Projeler p ON g.ProjeId = p.Id " +
-                     "WHERE g.ProjeId = ?";
-        return fetchGorevler(sql, projeId);
-    }
+    String sql = "SELECT g.Id, g.Ad, g.Durum, g.BaslangicTarihi, g.BitisTarihi, g.AdamGun, " +
+                 "COALESCE(c.Ad, 'Atanmamış') AS CalisanAd, " +
+                 "COALESCE(c.Soyad, '') AS CalisanSoyad, " +
+                 "p.Ad AS ProjeAd, " +
+                 "DATEDIFF(g.BitisTarihi, CURRENT_DATE) AS GecikmeSuresi " +
+                 "FROM Gorevler g " +
+                 "LEFT JOIN Calisanlar c ON g.CalisanId = c.Id " + 
+                 "JOIN Projeler p ON g.ProjeId = p.Id " +
+                 "WHERE g.ProjeId = ?";
+    return fetchGorevler(sql, projeId);
+}
 
     private List<String> fetchGorevler(String sql, Object... params) {
         List<String> gorevler = new ArrayList<>();
