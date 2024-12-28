@@ -12,7 +12,7 @@ class GorevRepository {
 
     // Görev Ekleme Metodu
     public void gorevEkle(int projeId, int calisanId, String ad, String durum, Date baslangicTarihi, Date bitisTarihi,
-                          int adamGun) {
+                          float adamGun) {
         String sql = "INSERT INTO Gorevler (ProjeId, CalisanId, Ad, Durum, BaslangicTarihi, BitisTarihi, AdamGun) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -22,7 +22,7 @@ class GorevRepository {
             stmt.setString(4, durum);
             stmt.setDate(5, baslangicTarihi);
             stmt.setDate(6, bitisTarihi);
-            stmt.setInt(7, adamGun);
+            stmt.setFloat(7, adamGun);
             stmt.executeUpdate();
 
             System.out.println("Görev başarıyla eklendi.");
@@ -37,7 +37,7 @@ class GorevRepository {
                  "COALESCE(c.Ad, 'Atanmamış') AS CalisanAd, " +
                  "COALESCE(c.Soyad, '') AS CalisanSoyad, " +
                  "p.Ad AS ProjeAd, " +
-                 "DATEDIFF(g.BitisTarihi, CURRENT_DATE) AS GecikmeSuresi " +
+                 "DATEDIFF(CURRENT_DATE, g.BitisTarihi) AS GecikmeSuresi " +
                  "FROM Gorevler g " +
                  "LEFT JOIN Calisanlar c ON g.CalisanId = c.Id " + 
                  "JOIN Projeler p ON g.ProjeId = p.Id " +
@@ -61,7 +61,7 @@ class GorevRepository {
                     String durum = rs.getString("Durum");
                     Date baslangicTarihi = rs.getDate("BaslangicTarihi");
                     Date bitisTarihi = rs.getDate("BitisTarihi");
-                    int adamGun = rs.getInt("AdamGun");
+                    float adamGun = rs.getFloat("AdamGun");
                     String calisanAd = rs.getString("CalisanAd");
                     String calisanSoyad = rs.getString("CalisanSoyad");
                     String projeAd = rs.getString("ProjeAd");
@@ -81,7 +81,7 @@ class GorevRepository {
 
     // Görev Durumu Güncelleme
     public void gorevDurumuGuncelle(int gorevId) {
-        String selectSql = "SELECT BitisTarihi, Durum FROM Gorevler WHERE Id = ?";
+        String selectSql = "SELECT BaslangicTarihi, Durum FROM Gorevler WHERE Id = ?";
         String updateSql = "UPDATE Gorevler SET Durum = ? WHERE Id = ?";
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement selectStmt = conn.prepareStatement(selectSql);
@@ -90,7 +90,7 @@ class GorevRepository {
             selectStmt.setInt(1, gorevId);
             try (ResultSet rs = selectStmt.executeQuery()) {
                 if (rs.next()) {
-                    Date bitisTarihi = rs.getDate("BitisTarihi");
+                    Date baslangicTarihi = rs.getDate("BaslangicTarihi");
                     String mevcutDurum = rs.getString("Durum");
                     Date bugun = new Date(System.currentTimeMillis());
 
@@ -99,8 +99,7 @@ class GorevRepository {
                         return;
                     }
 
-                    String yeniDurum = bugun.after(bitisTarihi) ? "Tamamlanacak" :
-                            bugun.equals(bitisTarihi) ? "Tamamlandı" : "Devam Ediyor";
+                    String yeniDurum = bugun.after(baslangicTarihi) ? "Devam Ediyor" : "Tamamlanacak";
 
                     updateStmt.setString(1, yeniDurum);
                     updateStmt.setInt(2, gorevId);
@@ -110,6 +109,46 @@ class GorevRepository {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void tamamlandiOlarakIsaretle(int gorevId) throws Exception {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+
+        try {
+            // Veritabanı bağlantısını oluştur
+            connection = DatabaseHelper.getConnection();
+
+            // Görevi kontrol et (Mevcut durumda "Tamamlandı" ise işlem yapılmaz)
+            String kontrolQuery = "SELECT Durum, BitisTarihi FROM Gorevler WHERE Id = ?";
+            preparedStatement = connection.prepareStatement(kontrolQuery);
+            preparedStatement.setInt(1, gorevId);
+            resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                String mevcutDurum = resultSet.getString("durum");
+                if ("Tamamlandı".equalsIgnoreCase(mevcutDurum)) {
+                    throw new Exception("Görev zaten tamamlandı olarak işaretlenmiş.");
+                }
+            } else {
+                throw new Exception("Görev bulunamadı.");
+            }
+
+            // Görev durumunu "Tamamlandı" olarak güncelle ve bitiş tarihini bugüne ayarla
+            String guncelleQuery = "UPDATE Gorevler SET Durum = ? WHERE Id = ?";
+            preparedStatement = connection.prepareStatement(guncelleQuery);
+            preparedStatement.setString(1, "Tamamlandı");
+            preparedStatement.setInt(2, gorevId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new Exception("Görev durumu güncellenemedi.");
+            }
+
+        } catch (SQLException e) {
+            throw new Exception("Veritabanı hatası: " + e.getMessage(), e);
         }
     }
 

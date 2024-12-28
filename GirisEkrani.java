@@ -607,7 +607,7 @@ class GorevEkle {
                     return;
                 }
 
-                int adamGun = Integer.parseInt(adamGunStr); // Can throw NumberFormatException if input is not a valid
+                float adamGun = Float.parseFloat(adamGunStr); // Can throw NumberFormatException if input is not a valid
                 // number
 
                 // Parse the dates
@@ -696,17 +696,21 @@ class GorevDurumuGuncelle {
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(3, 1));
+        JPanel panel = new JPanel(new GridLayout(4, 1));
 
         // Görevler ComboBox
         JLabel lblGorevSec = new JLabel("Görev Seç:");
         JComboBox<String> cbGorevler = new JComboBox<>();
+
+        // Tamamlandı Checkbox
+        JCheckBox chkTamamlandi = new JCheckBox("Tamamlandı olarak işaretle");
 
         // Güncelle Butonu
         JButton btnGuncelle = new JButton("Durumu Güncelle");
 
         panel.add(lblGorevSec);
         panel.add(cbGorevler);
+        panel.add(chkTamamlandi);
         panel.add(btnGuncelle);
 
         frame.add(panel);
@@ -738,11 +742,17 @@ class GorevDurumuGuncelle {
 
                 String sonuc = gorevAdi.substring(startIndex, endIndex);
                 int gorevId = Integer.parseInt(sonuc); // Görev ID'yi görev adından ayır
-                GorevRepository repository = new GorevRepository();
-                repository.gorevDurumuGuncelle(gorevId);
 
-                JOptionPane.showMessageDialog(frame, "Görev durumu başarıyla güncellendi.",
-                                              "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                GorevRepository repository = new GorevRepository();
+                if (chkTamamlandi.isSelected()) {
+                    repository.tamamlandiOlarakIsaretle(gorevId);
+                    JOptionPane.showMessageDialog(frame, "Görev başarıyla tamamlandı olarak işaretlendi.",
+                                                  "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    repository.gorevDurumuGuncelle(gorevId);
+                    JOptionPane.showMessageDialog(frame, "Görev durumu başarıyla güncellendi.",
+                                                  "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                }
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(frame, "Bir hata oluştu: " + ex.getMessage(),
                                               "Hata", JOptionPane.ERROR_MESSAGE);
