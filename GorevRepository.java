@@ -182,4 +182,34 @@ class GorevRepository {
             }
         }
     }
+    public void bitisTarihiniIleriAt(int projeId) {
+    String selectSql = "SELECT MAX(DATEDIFF(CURRENT_DATE, g.BitisTarihi)) AS MaxGecikme " +
+                       "FROM Gorevler g WHERE g.ProjeId = ? AND g.Durum != 'Tamamlandı' AND g.BitisTarihi < CURRENT_DATE";
+    String updateSql = "UPDATE Projeler SET BitisTarihi = DATE_ADD(BitisTarihi, INTERVAL ? DAY) WHERE Id = ?";
+
+    try (Connection conn = DatabaseHelper.getConnection();
+         PreparedStatement selectStmt = conn.prepareStatement(selectSql);
+         PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+
+        // Bitmeyen görevlerin maksimum gecikmesini hesapla
+        selectStmt.setInt(1, projeId);
+        try (ResultSet rs = selectStmt.executeQuery()) {
+            if (rs.next()) {
+                int maxGecikme = rs.getInt("MaxGecikme");
+
+                if (maxGecikme > 0) {
+                    // Bitiş tarihini gecikme kadar ileri at
+                    updateStmt.setInt(1, maxGecikme);
+                    updateStmt.setInt(2, projeId);
+                    updateStmt.executeUpdate();
+                    System.out.println("Proje bitiş tarihi " + maxGecikme + " gün ileri alındı.");
+                } else {
+                    System.out.println("Gecikme yok, bitiş tarihi değişmedi.");
+                }
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
 }

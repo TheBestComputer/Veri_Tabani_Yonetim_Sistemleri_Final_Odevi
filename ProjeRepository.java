@@ -3,6 +3,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -48,6 +50,8 @@ public List<String> projeListele(int kullaniciId) {
                  "(SELECT MAX(DATEDIFF(CURRENT_DATE, g.BitisTarihi)) FROM Gorevler g WHERE g.ProjeId = p.Id AND g.Durum != 'Tamamlandı' AND g.BitisTarihi < CURRENT_DATE) AS MaxGecikme " +
                  "FROM Projeler p WHERE p.KullaniciId = ?";
     List<String> projeler = new ArrayList<>();
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
     try (Connection conn = DatabaseHelper.getConnection();
          PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -56,12 +60,17 @@ public List<String> projeListele(int kullaniciId) {
             while (rs.next()) {
                 String id = rs.getString("Id");
                 String ad = rs.getString("Ad");
-                String baslangicTarihi = rs.getString("BaslangicTarihi");
-                String bitisTarihi = rs.getString("BitisTarihi");
+                LocalDate baslangicTarihi = rs.getDate("BaslangicTarihi").toLocalDate();
+                LocalDate bitisTarihi = rs.getDate("BitisTarihi").toLocalDate();
                 int bitmeyenGorevSayisi = rs.getInt("BitmeyenGorevSayisi");
                 int maxGecikme = rs.getInt("MaxGecikme");
 
-                projeler.add(id + " - " + ad + " - " + baslangicTarihi + " - " + bitisTarihi +
+                // Bitiş tarihini gecikme kadar ileri at
+                LocalDate guncellenmisBitisTarihi = maxGecikme > 0 ? bitisTarihi.plusDays(maxGecikme) : bitisTarihi;
+
+                projeler.add(id + " - " + ad +
+                             " - " + baslangicTarihi.format(formatter) +
+                             " - " + guncellenmisBitisTarihi.format(formatter) +
                              " - Bitmeyen Görev Sayısı: " + bitmeyenGorevSayisi +
                              " - Maksimum Gecikme: " + (maxGecikme > 0 ? maxGecikme + " gün" : "Yok"));
             }
