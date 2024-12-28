@@ -12,13 +12,14 @@ import java.util.Map;
 
 class CalisanRepository {
 
-    public void calisanEkle(String ad, String soyad, String email) {
-        String sql = "INSERT INTO Calisanlar (Ad, Soyad, Email) VALUES (?, ?, ?)";
+    public void calisanEkle(String ad, String soyad, String email, int kullaniciId) {
+        String sql = "INSERT INTO Calisanlar (Ad, Soyad, Email, kullaniciId) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, ad);
             stmt.setString(2, soyad);
             stmt.setString(3, email);
+            stmt.setInt(4, kullaniciId);
 
             stmt.executeUpdate();
             System.out.println("Personel başarıyla eklendi.");
@@ -27,11 +28,15 @@ class CalisanRepository {
         }
     }
 
-    public Map<Integer, String> calisanIdListele() {
+    public Map<Integer, String> calisanIdListele(int kullaniciId) {
         Map<Integer, String> calisanMap = new LinkedHashMap<>();
-        String sql = "SELECT Id, CONCAT(Ad, ' ', Soyad) AS AdSoyad FROM Calisanlar";
+        String sql = "SELECT Id, CONCAT(Ad, ' ', Soyad) AS AdSoyad FROM Calisanlar WHERE kullaniciId = ?";
 
-        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql);) {
+
+            stmt.setInt(1, kullaniciId);
+
+            ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
                 calisanMap.put(rs.getInt("Id"), rs.getString("AdSoyad"));
@@ -42,10 +47,14 @@ class CalisanRepository {
         return calisanMap;
     }
 
-    public List<String> calisanListele() {
-        String sql = "SELECT * FROM Calisanlar";
+    public List<String> calisanListele(int kullaniciId) {
+        String sql = "SELECT * FROM Calisanlar WHERE kullaniciId = ?";
         List<String> calisanlar = new ArrayList<>();
-        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql);) {
+
+            stmt.setInt(1, kullaniciId);
+
+            ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
                 int id = rs.getInt("Id");

@@ -17,36 +17,92 @@ public class GirisEkrani {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(3, 2));
+        JPanel panel = new JPanel(new GridLayout(4, 2));
 
         JLabel lblKullaniciAdi = new JLabel("Kullanıcı Adı:");
         JTextField txtKullaniciAdi = new JTextField();
         JLabel lblSifre = new JLabel("Şifre:");
         JPasswordField txtSifre = new JPasswordField();
         JButton btnGiris = new JButton("Giriş Yap");
+        JButton btnKayitOl = new JButton("Kayıt Ol");
 
         panel.add(lblKullaniciAdi);
         panel.add(txtKullaniciAdi);
         panel.add(lblSifre);
         panel.add(txtSifre);
         panel.add(btnGiris);
+        panel.add(btnKayitOl);
 
         frame.add(panel);
 
         btnGiris.addActionListener(e -> {
             String kullaniciAdi = txtKullaniciAdi.getText();
             String sifre = new String(txtSifre.getPassword());
+            
+            KullaniciRepository repository = new KullaniciRepository();
 
-            if (kullaniciAdi.equals("admin") && sifre.equals("1234")) {
+            if (repository.authenticateUser(kullaniciAdi, sifre)) {
                 frame.dispose();
-                AnaMenu.main(null);
+                int kullaniciId = repository.kullaniciId(kullaniciAdi, sifre);
+                AnaMenu.main(new String[]{String.valueOf(kullaniciId)});
             } else {
                 JOptionPane.showMessageDialog(frame, "Hatalı kullanıcı adı veya şifre!", "Hata",
                         JOptionPane.ERROR_MESSAGE);
             }
         });
 
+        btnKayitOl.addActionListener(e -> openKayitEkrani());
+
         frame.setVisible(true);
+    }
+
+    public static void openKayitEkrani() {
+        JFrame kayitFrame = new JFrame("Kayıt Ol");
+        kayitFrame.setSize(350, 300);
+        kayitFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        kayitFrame.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel(new GridLayout(5, 2));
+
+        JLabel lblEmail = new JLabel("Email:");
+        JTextField txtEmail = new JTextField();
+        JLabel lblPassword = new JLabel("Şifre:");
+        JPasswordField txtPassword = new JPasswordField();
+        JLabel lblName = new JLabel("Ad:");
+        JTextField txtName = new JTextField();
+        JLabel lblSurname = new JLabel("Soyad:");
+        JTextField txtSurname = new JTextField();
+        JButton btnKayit = new JButton("Kayıt Ol");
+
+        panel.add(lblEmail);
+        panel.add(txtEmail);
+        panel.add(lblPassword);
+        panel.add(txtPassword);
+        panel.add(lblName);
+        panel.add(txtName);
+        panel.add(lblSurname);
+        panel.add(txtSurname);
+        panel.add(btnKayit);
+
+        kayitFrame.add(panel);
+
+        btnKayit.addActionListener(e -> {
+            String email = txtEmail.getText();
+            String password = new String(txtPassword.getPassword());
+
+            KullaniciRepository repository = new KullaniciRepository();
+
+            if (repository.registerUser(email, password)) {
+                JOptionPane.showMessageDialog(kayitFrame, "Kayıt başarılı!", "Başarılı",
+                        JOptionPane.INFORMATION_MESSAGE);
+                kayitFrame.dispose();
+            } else {
+                JOptionPane.showMessageDialog(kayitFrame, "Kayıt başarısız!", "Hata",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        kayitFrame.setVisible(true);
     }
 }
 
@@ -58,7 +114,7 @@ class AnaMenu {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(8, 1));
+        JPanel panel = new JPanel(new GridLayout(7, 1));
 
         JButton btnProjeEkle = new JButton("Yeni Proje Ekle");
         JButton btnProjeListele = new JButton("Projeleri Listele");
@@ -66,7 +122,6 @@ class AnaMenu {
         JButton btnPersonelListele = new JButton("Personelleri Listele");
         JButton btnPersonelSil = new JButton("Personel Sil");
         JButton btnPersonelGuncelle = new JButton("Personel Güncelle");
-        JButton btnGorevYonetimi = new JButton("Görev Yönetimi");
         JButton btnCikis = new JButton("Çıkış");
 
         panel.add(btnProjeEkle);
@@ -75,24 +130,23 @@ class AnaMenu {
         panel.add(btnPersonelListele);
         panel.add(btnPersonelSil);
         panel.add(btnPersonelGuncelle);
-        panel.add(btnGorevYonetimi);
         panel.add(btnCikis);
 
         frame.add(panel);
 
-        btnProjeEkle.addActionListener(e -> ProjeEkle.main(null));
+        String kullaniciId = args[0];
 
-        btnProjeListele.addActionListener(e -> ProjeListele.main(null));
+        btnProjeEkle.addActionListener(e -> ProjeEkle.main(new String[]{String.valueOf(kullaniciId)}));
 
-        btnPersonelEkle.addActionListener(e -> PersonelEkle.main(null));
+        btnProjeListele.addActionListener(e -> ProjeListele.main(new String[]{String.valueOf(kullaniciId)}));
 
-        btnPersonelListele.addActionListener(e -> PersonelListele.main(null));
+        btnPersonelEkle.addActionListener(e -> PersonelEkle.main(new String[]{String.valueOf(kullaniciId)}));
 
-        btnPersonelSil.addActionListener(e -> PersonelSil.main(null));
+        btnPersonelListele.addActionListener(e -> PersonelListele.main(new String[]{String.valueOf(kullaniciId)}));
 
-        btnPersonelGuncelle.addActionListener(e -> PersonelGuncelle.main(null));
+        btnPersonelSil.addActionListener(e -> PersonelSil.main(new String[]{String.valueOf(kullaniciId)}));
 
-        btnGorevYonetimi.addActionListener(e -> GorevYonetimi.main(null));
+        btnPersonelGuncelle.addActionListener(e -> PersonelGuncelle.main(new String[]{String.valueOf(kullaniciId)}));
 
         btnCikis.addActionListener(e -> {
             frame.dispose();
@@ -132,13 +186,15 @@ class PersonelEkle {
 
         frame.add(panel);
 
+        int kullaniciId = Integer.parseInt(args[0]);
+
         btnKaydet.addActionListener(e -> {
             String ad = txtAd.getText();
             String soyad = txtSoyad.getText();
             String email = txtEmail.getText();
 
             CalisanRepository repository = new CalisanRepository();
-            repository.calisanEkle(ad, soyad, email);
+            repository.calisanEkle(ad, soyad, email, kullaniciId);
             JOptionPane.showMessageDialog(frame, "Personel başarıyla eklendi.", "Başarılı",
                     JOptionPane.INFORMATION_MESSAGE);
             frame.dispose();
@@ -168,9 +224,11 @@ class PersonelSil {
 
         frame.add(panel);
 
+        int kullaniciId = Integer.parseInt(args[0]);
+
         // Personel ID ve Ad Soyad bilgilerini yükle
         CalisanRepository repository = new CalisanRepository();
-        Map<Integer, String> calisanlar = repository.calisanIdListele();
+        Map<Integer, String> calisanlar = repository.calisanIdListele(kullaniciId);
 
         // ComboBox'a personel ekleme
         for (Map.Entry<Integer, String> entry : calisanlar.entrySet()) {
@@ -234,9 +292,11 @@ class PersonelGuncelle {
 
         frame.add(panel);
 
+        int kullaniciId = Integer.parseInt(args[0]);
+
         // Personel ID ve isim bilgilerini ComboBox'a yükleme
         CalisanRepository repository = new CalisanRepository();
-        Map<Integer, String> calisanlar = repository.calisanIdListele();
+        Map<Integer, String> calisanlar = repository.calisanIdListele(kullaniciId);
 
         for (Map.Entry<Integer, String> entry : calisanlar.entrySet()) {
             cmbPersonel.addItem(entry.getKey() + " - " + entry.getValue());
@@ -287,8 +347,10 @@ class PersonelListele {
         JTextArea txtArea = new JTextArea(400, 700);
         txtArea.setEditable(false);
 
+        int kullaniciId = Integer.parseInt(args[0]);
+
         CalisanRepository repository = new CalisanRepository();
-        List<String> personeller = repository.calisanListele();
+        List<String> personeller = repository.calisanListele(kullaniciId);
 
         // Listeleri panelde göster
         JList<String> personelListesi = new JList<>(personeller.toArray(new String[0]));
@@ -360,13 +422,15 @@ class ProjeEkle {
 
         frame.add(panel);
 
+        String kullaniciId = args[0];
+
         btnKaydet.addActionListener(e -> {
             String ad = txtAd.getText();
             String baslangic = txtBaslangic.getText();
             String bitis = txtBitis.getText();
 
             ProjeRepository repository = new ProjeRepository();
-            repository.projeEkle(ad, baslangic, bitis);
+            repository.projeEkle(ad, baslangic, bitis, kullaniciId);
             JOptionPane.showMessageDialog(frame, "Proje başarıyla eklendi.", "Başarılı",
                     JOptionPane.INFORMATION_MESSAGE);
             frame.dispose();
@@ -388,8 +452,10 @@ class ProjeListele {
         JList<String> projeListesi = new JList<>();
         JScrollPane scrollPane = new JScrollPane(projeListesi);
 
+        int kullaniciId = Integer.parseInt(args[0]);
+
         ProjeRepository repository = new ProjeRepository();
-        List<String> projeler = repository.projeListele();
+        List<String> projeler = repository.projeListele(kullaniciId);
         DefaultListModel<String> model = new DefaultListModel<>();
 
         for (String proje : projeler) {
@@ -410,48 +476,9 @@ class ProjeListele {
             if (secilenProje != null) {
                 frame.dispose();
                 int projeId = Integer.parseInt(secilenProje.split(" - ")[0]); // Proje ID'sini ayıkla
-                GorevEkle.ProjeGorevYonetimi.main(new String[]{String.valueOf(projeId)});
+                GorevEkle.ProjeGorevYonetimi.main(new String[]{String.valueOf(projeId), String.valueOf(kullaniciId)});
             } else {
                 JOptionPane.showMessageDialog(frame, "Lütfen bir proje seçin!", "Hata", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        frame.setVisible(true);
-    }
-}
-
-class GorevYonetimi {
-
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("Görev Yönetimi");
-        frame.setSize(400, 300);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setLocationRelativeTo(null);
-
-        JPanel panel = new JPanel(new GridLayout(3, 1));
-
-        JButton btnGorevEkle = new JButton("Yeni Görev Ekle");
-        JButton btnGorevListele = new JButton("Görevleri Listele");
-        JButton btnGorevDurumGuncelle = new JButton("Görev Durumunu Güncelle");
-
-        panel.add(btnGorevEkle);
-        panel.add(btnGorevListele);
-        panel.add(btnGorevDurumGuncelle);
-
-        frame.add(panel);
-
-        btnGorevEkle.addActionListener(e -> GorevEkle.main(null));
-
-        btnGorevListele.addActionListener(e -> GorevListele.main(null));
-
-        btnGorevDurumGuncelle.addActionListener(e -> {
-            String gorevIdStr = JOptionPane.showInputDialog(frame, "Görev ID'sini girin:");
-            try {
-                int gorevId = Integer.parseInt(gorevIdStr);
-                GorevRepository repository = new GorevRepository();
-                repository.gorevDurumuGuncelle(gorevId);
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(frame, "Geçersiz Görev ID'si.");
             }
         });
 
@@ -545,8 +572,10 @@ class GorevEkle {
 
         frame.add(panel);
 
+        int kullaniciId = Integer.parseInt(args[1]);
+
         CalisanRepository calisanRepository = new CalisanRepository();
-        Map<Integer, String> calisanMap = calisanRepository.calisanIdListele();
+        Map<Integer, String> calisanMap = calisanRepository.calisanIdListele(kullaniciId);
 
         for (String calisanAd : calisanMap.values()) {
             comboPersonelId.addItem(calisanAd);
@@ -616,6 +645,8 @@ class GorevEkle {
         public static void main(String[] args) {
             int projeId = Integer.parseInt(args[0]);
 
+            int kullaniciId = Integer.parseInt(args[1]);
+
             JFrame frame = new JFrame("Görev Yönetimi - Proje ID: " + projeId);
             frame.setSize(500, 400);
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -636,7 +667,7 @@ class GorevEkle {
             frame.add(panel);
 
             btnGorevEkle.addActionListener(e -> {
-                GorevEkle.main(new String[]{String.valueOf(projeId)});
+                GorevEkle.main(new String[]{String.valueOf(projeId), String.valueOf(kullaniciId)});
             });
 
             btnGorevListele.addActionListener(e -> {

@@ -10,13 +10,15 @@ import java.util.Map;
 
 class ProjeRepository {
 
-    public void projeEkle(String ad, String baslangicTarihi, String bitisTarihi) {
-        String sql = "INSERT INTO Projeler (Ad, BaslangicTarihi, BitisTarihi) VALUES (?, ?, ?)";
+    public void projeEkle(String ad, String baslangicTarihi, String bitisTarihi, String kullaniciId) {
+        String sql = "INSERT INTO Projeler (Ad, BaslangicTarihi, BitisTarihi, kullaniciId) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
+            int kullaniciIdSayisi = Integer.parseInt(kullaniciId);
             stmt.setString(1, ad);
             stmt.setString(2, baslangicTarihi);
             stmt.setString(3, bitisTarihi);
+            stmt.setInt(4, kullaniciIdSayisi);
 
             stmt.executeUpdate();
             System.out.println("Proje başarıyla eklendi.");
@@ -40,17 +42,20 @@ class ProjeRepository {
         return projeMap;
     }
 
-    public List<String> projeListele() {
-        String sql = "SELECT * FROM Projeler";
+    public List<String> projeListele(int kullaniciId) {
+        String sql = "SELECT * FROM Projeler WHERE kullaniciId = ?";
         List<String> projeler = new ArrayList<>();
-        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ) {
 
-            while (rs.next()) {
-                String id = rs.getString("Id");
-                String ad = rs.getString("Ad");
-                String baslangicTarihi = rs.getString("BaslangicTarihi");
-                String bitisTarihi = rs.getString("BitisTarihi");
-                projeler.add(id + " - " + ad + " - " + baslangicTarihi + " - " + bitisTarihi);
+            stmt.setInt(1, kullaniciId);
+            try(ResultSet rs = stmt.executeQuery()){
+                while (rs.next()) {
+                    String id = rs.getString("Id");
+                    String ad = rs.getString("Ad");
+                    String baslangicTarihi = rs.getString("BaslangicTarihi");
+                    String bitisTarihi = rs.getString("BitisTarihi");
+                    projeler.add(id + " - " + ad + " - " + baslangicTarihi + " - " + bitisTarihi);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
