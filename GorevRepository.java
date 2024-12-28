@@ -3,6 +3,8 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -128,5 +130,56 @@ class GorevRepository {
             e.printStackTrace();
         }
         return calisanlar;
+    }
+        // Bitiş Tarihine Rağmen Bitmeyen Görevleri Getirme
+    public List<String> bitmeyenGorevleriGetir(int projeId) {
+        String sql = "SELECT Id, Ad, Durum, BaslangicTarihi, BitisTarihi, AdamGun " +
+                     "FROM Gorevler WHERE ProjeId = ? AND Durum != 'Tamamlandı' AND BitisTarihi < CURRENT_DATE";
+        List<String> bitmeyenGorevler = new ArrayList<>();
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, projeId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("Id");
+                    String ad = rs.getString("Ad");
+                    String durum = rs.getString("Durum");
+                    Date bitisTarihi = rs.getDate("BitisTarihi");
+                    bitmeyenGorevler.add("Görev ID: " + id + ", Ad: " + ad + ", Durum: " + durum
+                            + ", Bitiş Tarihi: " + bitisTarihi);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return bitmeyenGorevler;
+    }
+
+    // Gecikmeyi Hesapla ve Güncelle
+    public void gecikmeyiHesaplaVeGuncelle(int projeId) {
+        List<String> bitmeyenGorevler = bitmeyenGorevleriGetir(projeId);
+
+        if (!bitmeyenGorevler.isEmpty()) {
+            int maxGecikme = 0;
+            for (String gorev : bitmeyenGorevler) {
+                // Parse date and calculate delay (assume the format includes date in "Bitiş Tarihi: " segment)
+                LocalDate bitisTarihi = LocalDate.parse(gorev.split("Bitiş Tarihi: ")[1].trim());
+                int gecikme = (int) ChronoUnit.DAYS.between(bitisTarihi, LocalDate.now());
+                maxGecikme = Math.max(maxGecikme, gecikme);
+            }
+
+            if (maxGecikme > 0) {
+                String sql = "UPDATE Projeler SET BitisTarihi = DATE_ADD(BitisTarihi, INTERVAL ? DAY) WHERE Id = ?";
+                try (Connection conn = DatabaseHelper.getConnection();
+                     PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setInt(1, maxGecikme);
+                    stmt.setInt(2, projeId);
+                    stmt.executeUpdate();
+                    System.out.println("Proje bitiş tarihi gecikme süresine göre güncellendi.");
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }

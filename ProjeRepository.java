@@ -42,26 +42,35 @@ class ProjeRepository {
         return projeMap;
     }
 
-    public List<String> projeListele(int kullaniciId) {
-        String sql = "SELECT * FROM Projeler WHERE kullaniciId = ?";
-        List<String> projeler = new ArrayList<>();
-        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ) {
+public List<String> projeListele(int kullaniciId) {
+    String sql = "SELECT p.Id, p.Ad, p.BaslangicTarihi, p.BitisTarihi, " +
+                 "(SELECT COUNT(*) FROM Gorevler g WHERE g.ProjeId = p.Id AND g.Durum != 'Tamamlandı' AND g.BitisTarihi < CURRENT_DATE) AS BitmeyenGorevSayisi, " +
+                 "(SELECT MAX(DATEDIFF(CURRENT_DATE, g.BitisTarihi)) FROM Gorevler g WHERE g.ProjeId = p.Id AND g.Durum != 'Tamamlandı' AND g.BitisTarihi < CURRENT_DATE) AS MaxGecikme " +
+                 "FROM Projeler p WHERE p.KullaniciId = ?";
+    List<String> projeler = new ArrayList<>();
+    try (Connection conn = DatabaseHelper.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setInt(1, kullaniciId);
-            try(ResultSet rs = stmt.executeQuery()){
-                while (rs.next()) {
-                    String id = rs.getString("Id");
-                    String ad = rs.getString("Ad");
-                    String baslangicTarihi = rs.getString("BaslangicTarihi");
-                    String bitisTarihi = rs.getString("BitisTarihi");
-                    projeler.add(id + " - " + ad + " - " + baslangicTarihi + " - " + bitisTarihi);
-                }
+        stmt.setInt(1, kullaniciId);
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                String id = rs.getString("Id");
+                String ad = rs.getString("Ad");
+                String baslangicTarihi = rs.getString("BaslangicTarihi");
+                String bitisTarihi = rs.getString("BitisTarihi");
+                int bitmeyenGorevSayisi = rs.getInt("BitmeyenGorevSayisi");
+                int maxGecikme = rs.getInt("MaxGecikme");
+
+                projeler.add(id + " - " + ad + " - " + baslangicTarihi + " - " + bitisTarihi +
+                             " - Bitmeyen Görev Sayısı: " + bitmeyenGorevSayisi +
+                             " - Maksimum Gecikme: " + (maxGecikme > 0 ? maxGecikme + " gün" : "Yok"));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        return projeler;
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
+    return projeler;
+}
 
     public List<String> projeGorevListele(int projeId) {
         List<String> gorevler = new ArrayList<>();
