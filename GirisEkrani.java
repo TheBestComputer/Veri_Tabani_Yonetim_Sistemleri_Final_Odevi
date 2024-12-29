@@ -38,13 +38,13 @@ public class GirisEkrani {
         btnGiris.addActionListener(e -> {
             String kullaniciAdi = txtKullaniciAdi.getText();
             String sifre = new String(txtSifre.getPassword());
-            
+
             KullaniciRepository repository = new KullaniciRepository();
 
             if (repository.authenticateUser(kullaniciAdi, sifre)) {
                 frame.dispose();
                 int kullaniciId = repository.kullaniciId(kullaniciAdi, sifre);
-                AnaMenu.main(new String[]{String.valueOf(kullaniciId)});
+                AnaMenu.main(new String[] { String.valueOf(kullaniciId) });
             } else {
                 JOptionPane.showMessageDialog(frame, "Hatalı kullanıcı adı veya şifre!", "Hata",
                         JOptionPane.ERROR_MESSAGE);
@@ -136,17 +136,17 @@ class AnaMenu {
 
         String kullaniciId = args[0];
 
-        btnProjeEkle.addActionListener(e -> ProjeEkle.main(new String[]{String.valueOf(kullaniciId)}));
+        btnProjeEkle.addActionListener(e -> ProjeEkle.main(new String[] { String.valueOf(kullaniciId) }));
 
-        btnProjeListele.addActionListener(e -> ProjeListele.main(new String[]{String.valueOf(kullaniciId)}));
+        btnProjeListele.addActionListener(e -> ProjeListele.main(new String[] { String.valueOf(kullaniciId) }));
 
-        btnPersonelEkle.addActionListener(e -> PersonelEkle.main(new String[]{String.valueOf(kullaniciId)}));
+        btnPersonelEkle.addActionListener(e -> PersonelEkle.main(new String[] { String.valueOf(kullaniciId) }));
 
-        btnPersonelListele.addActionListener(e -> PersonelListele.main(new String[]{String.valueOf(kullaniciId)}));
+        btnPersonelListele.addActionListener(e -> PersonelListele.main(new String[] { String.valueOf(kullaniciId) }));
 
-        btnPersonelSil.addActionListener(e -> PersonelSil.main(new String[]{String.valueOf(kullaniciId)}));
+        btnPersonelSil.addActionListener(e -> PersonelSil.main(new String[] { String.valueOf(kullaniciId) }));
 
-        btnPersonelGuncelle.addActionListener(e -> PersonelGuncelle.main(new String[]{String.valueOf(kullaniciId)}));
+        btnPersonelGuncelle.addActionListener(e -> PersonelGuncelle.main(new String[] { String.valueOf(kullaniciId) }));
 
         btnCikis.addActionListener(e -> {
             frame.dispose();
@@ -245,14 +245,17 @@ class PersonelSil {
                     boolean basarili = repository.calisanSil(personelId);
 
                     if (basarili) {
-                        JOptionPane.showMessageDialog(frame, "Personel başarıyla silindi.", "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(frame, "Personel başarıyla silindi.", "Başarılı",
+                                JOptionPane.INFORMATION_MESSAGE);
                         cmbPersonel.removeItem(selectedItem); // Silinen personeli combobox'tan çıkar
                     } else {
-                        JOptionPane.showMessageDialog(frame, "Personel silinemedi. Lütfen ID'yi kontrol edin.", "Hata", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(frame, "Personel silinemedi. Lütfen ID'yi kontrol edin.", "Hata",
+                                JOptionPane.ERROR_MESSAGE);
                     }
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(frame, "Bir hata oluştu: " + ex.getMessage(), "Hata", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Bir hata oluştu: " + ex.getMessage(), "Hata",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -313,21 +316,25 @@ class PersonelGuncelle {
                     String yeniEmail = txtYeniEmail.getText();
 
                     if (yeniAd.isEmpty() || yeniSoyad.isEmpty() || yeniEmail.isEmpty()) {
-                        JOptionPane.showMessageDialog(frame, "Lütfen tüm alanları doldurun!", "Hata", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(frame, "Lütfen tüm alanları doldurun!", "Hata",
+                                JOptionPane.ERROR_MESSAGE);
                         return;
                     }
 
                     boolean basarili = repository.calisanGuncelle(personelId, yeniAd, yeniSoyad, yeniEmail);
 
                     if (basarili) {
-                        JOptionPane.showMessageDialog(frame, "Personel başarıyla güncellendi.", "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(frame, "Personel başarıyla güncellendi.", "Başarılı",
+                                JOptionPane.INFORMATION_MESSAGE);
                         frame.dispose();
                     } else {
-                        JOptionPane.showMessageDialog(frame, "Personel güncellenemedi. Lütfen ID'yi kontrol edin.", "Hata", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(frame, "Personel güncellenemedi. Lütfen ID'yi kontrol edin.",
+                                "Hata", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(frame, "Bir hata oluştu: " + ex.getMessage(), "Hata", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Bir hata oluştu: " + ex.getMessage(), "Hata",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -476,7 +483,8 @@ class ProjeListele {
             if (secilenProje != null) {
                 frame.dispose();
                 int projeId = Integer.parseInt(secilenProje.split(" - ")[0]); // Proje ID'sini ayıkla
-                GorevEkle.ProjeGorevYonetimi.main(new String[]{String.valueOf(projeId), String.valueOf(kullaniciId)});
+                GorevEkle.ProjeGorevYonetimi
+                        .main(new String[] { String.valueOf(projeId), String.valueOf(kullaniciId) });
             } else {
                 JOptionPane.showMessageDialog(frame, "Lütfen bir proje seçin!", "Hata", JOptionPane.ERROR_MESSAGE);
             }
@@ -546,7 +554,7 @@ class GorevEkle {
         JLabel lblGorevAdi = new JLabel("Görev Adı:");
         JTextField txtGorevAdi = new JTextField();
         JLabel lblDurum = new JLabel("Durum:");
-        JComboBox<String> comboDurum = new JComboBox<>(new String[]{"Tamamlanacak", "Devam Ediyor", "Tamamlandı"});
+        JComboBox<String> comboDurum = new JComboBox<>(new String[] { "Tamamlanacak", "Devam Ediyor", "Tamamlandı" });
         JLabel lblBaslangicTarihi = new JLabel("Başlangıç Tarihi (YYYY-MM-DD):");
         JTextField txtBaslangicTarihi = new JTextField();
         JLabel lblBitisTarihi = new JLabel("Bitiş Tarihi (YYYY-MM-DD):");
@@ -667,15 +675,15 @@ class GorevEkle {
             frame.add(panel);
 
             btnGorevEkle.addActionListener(e -> {
-                GorevEkle.main(new String[]{String.valueOf(projeId), String.valueOf(kullaniciId)});
+                GorevEkle.main(new String[] { String.valueOf(projeId), String.valueOf(kullaniciId) });
             });
 
             btnGorevListele.addActionListener(e -> {
-                GorevListele.main(new String[]{String.valueOf(projeId)});
+                GorevListele.main(new String[] { String.valueOf(projeId) });
             });
 
             btnGorevDurumGuncelle.addActionListener(e -> {
-                GorevDurumuGuncelle.main(new String[]{String.valueOf(projeId)});
+                GorevDurumuGuncelle.main(new String[] { String.valueOf(projeId) });
             });
 
             btnGeriDon.addActionListener(e -> {
@@ -727,7 +735,7 @@ class GorevDurumuGuncelle {
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(frame, "Görevler yüklenirken bir hata oluştu: " + ex.getMessage(),
-                                          "Hata", JOptionPane.ERROR_MESSAGE);
+                    "Hata", JOptionPane.ERROR_MESSAGE);
         }
 
         // Görev durumu güncelleme işlemi
@@ -738,7 +746,7 @@ class GorevDurumuGuncelle {
                     throw new Exception("Görev seçilmedi.");
                 }
                 int startIndex = gorevAdi.indexOf(':') + 2; // '[' sonrası
-                int endIndex = gorevAdi.indexOf(',');      // ']' öncesi
+                int endIndex = gorevAdi.indexOf(','); // ']' öncesi
 
                 String sonuc = gorevAdi.substring(startIndex, endIndex);
                 int gorevId = Integer.parseInt(sonuc); // Görev ID'yi görev adından ayır
@@ -747,15 +755,15 @@ class GorevDurumuGuncelle {
                 if (chkTamamlandi.isSelected()) {
                     repository.tamamlandiOlarakIsaretle(gorevId);
                     JOptionPane.showMessageDialog(frame, "Görev başarıyla tamamlandı olarak işaretlendi.",
-                                                  "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                            "Başarılı", JOptionPane.INFORMATION_MESSAGE);
                 } else {
                     repository.gorevDurumuGuncelle(gorevId);
                     JOptionPane.showMessageDialog(frame, "Görev durumu başarıyla güncellendi.",
-                                                  "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                            "Başarılı", JOptionPane.INFORMATION_MESSAGE);
                 }
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(frame, "Bir hata oluştu: " + ex.getMessage(),
-                                              "Hata", JOptionPane.ERROR_MESSAGE);
+                        "Hata", JOptionPane.ERROR_MESSAGE);
             }
         });
 

@@ -158,8 +158,7 @@ class CalisanRepository {
                 }
             }
 
-            tamamlamaDurumuSayaci.forEach((durum, sayi)
-                    -> sb.append(String.format("%s: %d\n", durum, sayi)));
+            tamamlamaDurumuSayaci.forEach((durum, sayi) -> sb.append(String.format("%s: %d\n", durum, sayi)));
 
         } catch (SQLException e) {
             e.printStackTrace();

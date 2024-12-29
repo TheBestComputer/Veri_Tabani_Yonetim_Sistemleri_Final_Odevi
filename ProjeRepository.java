@@ -28,58 +28,45 @@ class ProjeRepository {
             e.printStackTrace();
         }
     }
+    
+    public List<String> projeListele(int kullaniciId) {
+        String sql = "SELECT p.Id, p.Ad, p.BaslangicTarihi, p.BitisTarihi, " +
+                "(SELECT COUNT(*) FROM Gorevler g WHERE g.ProjeId = p.Id AND g.Durum != 'Tamamlandı' AND g.BitisTarihi < CURRENT_DATE) AS BitmeyenGorevSayisi, "
+                +
+                "(SELECT MAX(DATEDIFF(CURRENT_DATE, g.BitisTarihi)) FROM Gorevler g WHERE g.ProjeId = p.Id AND g.Durum != 'Tamamlandı' AND g.BitisTarihi < CURRENT_DATE) AS MaxGecikme "
+                +
+                "FROM Projeler p WHERE p.KullaniciId = ?";
+        List<String> projeler = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    public Map<Integer, String> projeIdListele() {
-        Map<Integer, String> projeMap = new LinkedHashMap<>();
-        String sql = "SELECT Id, Ad FROM Projeler";
+        try (Connection conn = DatabaseHelper.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            stmt.setInt(1, kullaniciId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String id = rs.getString("Id");
+                    String ad = rs.getString("Ad");
+                    LocalDate baslangicTarihi = rs.getDate("BaslangicTarihi").toLocalDate();
+                    LocalDate bitisTarihi = rs.getDate("BitisTarihi").toLocalDate();
+                    int bitmeyenGorevSayisi = rs.getInt("BitmeyenGorevSayisi");
+                    int maxGecikme = rs.getInt("MaxGecikme");
 
-            while (rs.next()) {
-                projeMap.put(rs.getInt("Id"), rs.getString("Ad"));
+                    // Bitiş tarihini gecikme kadar ileri at
+                    LocalDate guncellenmisBitisTarihi = maxGecikme > 0 ? bitisTarihi.plusDays(maxGecikme) : bitisTarihi;
+
+                    projeler.add(id + " - " + ad +
+                            " - " + baslangicTarihi.format(formatter) +
+                            " - " + guncellenmisBitisTarihi.format(formatter) +
+                            " - Bitmeyen Görev Sayısı: " + bitmeyenGorevSayisi +
+                            " - Maksimum Gecikme: " + (maxGecikme > 0 ? maxGecikme + " gün" : "Yok"));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return projeMap;
+        return projeler;
     }
-
-public List<String> projeListele(int kullaniciId) {
-    String sql = "SELECT p.Id, p.Ad, p.BaslangicTarihi, p.BitisTarihi, " +
-                 "(SELECT COUNT(*) FROM Gorevler g WHERE g.ProjeId = p.Id AND g.Durum != 'Tamamlandı' AND g.BitisTarihi < CURRENT_DATE) AS BitmeyenGorevSayisi, " +
-                 "(SELECT MAX(DATEDIFF(CURRENT_DATE, g.BitisTarihi)) FROM Gorevler g WHERE g.ProjeId = p.Id AND g.Durum != 'Tamamlandı' AND g.BitisTarihi < CURRENT_DATE) AS MaxGecikme " +
-                 "FROM Projeler p WHERE p.KullaniciId = ?";
-    List<String> projeler = new ArrayList<>();
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-    try (Connection conn = DatabaseHelper.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-        stmt.setInt(1, kullaniciId);
-        try (ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                String id = rs.getString("Id");
-                String ad = rs.getString("Ad");
-                LocalDate baslangicTarihi = rs.getDate("BaslangicTarihi").toLocalDate();
-                LocalDate bitisTarihi = rs.getDate("BitisTarihi").toLocalDate();
-                int bitmeyenGorevSayisi = rs.getInt("BitmeyenGorevSayisi");
-                int maxGecikme = rs.getInt("MaxGecikme");
-
-                // Bitiş tarihini gecikme kadar ileri at
-                LocalDate guncellenmisBitisTarihi = maxGecikme > 0 ? bitisTarihi.plusDays(maxGecikme) : bitisTarihi;
-
-                projeler.add(id + " - " + ad +
-                             " - " + baslangicTarihi.format(formatter) +
-                             " - " + guncellenmisBitisTarihi.format(formatter) +
-                             " - Bitmeyen Görev Sayısı: " + bitmeyenGorevSayisi +
-                             " - Maksimum Gecikme: " + (maxGecikme > 0 ? maxGecikme + " gün" : "Yok"));
-            }
-        }
-    } catch (SQLException e) {
-        e.printStackTrace();
-    }
-    return projeler;
-}
 
     public List<String> projeGorevListele(int projeId) {
         List<String> gorevler = new ArrayList<>();

@@ -25,7 +25,7 @@ public class KullaniciRepository {
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, email);
             statement.setString(2, password);
-    
+
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 return resultSet.getInt("Id"); // Kullanıcı Id'sini döndür

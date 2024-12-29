@@ -12,9 +12,9 @@ class GorevRepository {
 
     // Görev Ekleme Metodu
     public void gorevEkle(int projeId, int calisanId, String ad, String durum, Date baslangicTarihi, Date bitisTarihi,
-                          float adamGun) {
+            float adamGun) {
         String sql = "INSERT INTO Gorevler (ProjeId, CalisanId, Ad, Durum, BaslangicTarihi, BitisTarihi, AdamGun) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, projeId);
             stmt.setInt(2, calisanId);
@@ -33,22 +33,22 @@ class GorevRepository {
 
     // Belirli Projeye Ait Görev Listeleme Metodu
     public List<String> gorevListeleByProje(int projeId) {
-    String sql = "SELECT g.Id, g.Ad, g.Durum, g.BaslangicTarihi, g.BitisTarihi, g.AdamGun, " +
-                 "COALESCE(c.Ad, 'Atanmamış') AS CalisanAd, " +
-                 "COALESCE(c.Soyad, '') AS CalisanSoyad, " +
-                 "p.Ad AS ProjeAd, " +
-                 "DATEDIFF(CURRENT_DATE, g.BitisTarihi) AS GecikmeSuresi " +
-                 "FROM Gorevler g " +
-                 "LEFT JOIN Calisanlar c ON g.CalisanId = c.Id " + 
-                 "JOIN Projeler p ON g.ProjeId = p.Id " +
-                 "WHERE g.ProjeId = ?";
-    return fetchGorevler(sql, projeId);
-}
+        String sql = "SELECT g.Id, g.Ad, g.Durum, g.BaslangicTarihi, g.BitisTarihi, g.AdamGun, " +
+                "COALESCE(c.Ad, 'Atanmamış') AS CalisanAd, " +
+                "COALESCE(c.Soyad, '') AS CalisanSoyad, " +
+                "p.Ad AS ProjeAd, " +
+                "DATEDIFF(CURRENT_DATE, g.BitisTarihi) AS GecikmeSuresi " +
+                "FROM Gorevler g " +
+                "LEFT JOIN Calisanlar c ON g.CalisanId = c.Id " +
+                "JOIN Projeler p ON g.ProjeId = p.Id " +
+                "WHERE g.ProjeId = ?";
+        return fetchGorevler(sql, projeId);
+    }
 
     private List<String> fetchGorevler(String sql, Object... params) {
         List<String> gorevler = new ArrayList<>();
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             for (int i = 0; i < params.length; i++) {
                 stmt.setObject(i + 1, params[i]);
@@ -70,7 +70,8 @@ class GorevRepository {
                     gorevler.add("Görev ID: " + id + ", Görev Adı: " + gorevAd + ", Durum: " + durum
                             + ", Başlangıç Tarihi: " + baslangicTarihi + ", Bitiş Tarihi: " + bitisTarihi
                             + ", Adam Gün: " + adamGun + ", Çalışan: " + calisanAd + " " + calisanSoyad
-                            + ", Proje: " + projeAd + ", Gecikme Süresi: " + (gecikmeSuresi < 0 ? 0 : gecikmeSuresi) + " gün");
+                            + ", Proje: " + projeAd + ", Gecikme Süresi: " + (gecikmeSuresi < 0 ? 0 : gecikmeSuresi)
+                            + " gün");
                 }
             }
         } catch (SQLException e) {
@@ -84,8 +85,8 @@ class GorevRepository {
         String selectSql = "SELECT BaslangicTarihi, Durum FROM Gorevler WHERE Id = ?";
         String updateSql = "UPDATE Gorevler SET Durum = ? WHERE Id = ?";
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement selectStmt = conn.prepareStatement(selectSql);
-             PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+                PreparedStatement selectStmt = conn.prepareStatement(selectSql);
+                PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
 
             selectStmt.setInt(1, gorevId);
             try (ResultSet rs = selectStmt.executeQuery()) {
@@ -157,8 +158,8 @@ class GorevRepository {
         String sql = "SELECT Id, Ad, Soyad FROM Calisanlar";
         List<String> calisanlar = new ArrayList<>();
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 int calisanId = rs.getInt("Id");
@@ -170,13 +171,14 @@ class GorevRepository {
         }
         return calisanlar;
     }
-        // Bitiş Tarihine Rağmen Bitmeyen Görevleri Getirme
+
+    // Bitiş Tarihine Rağmen Bitmeyen Görevleri Getirme
     public List<String> bitmeyenGorevleriGetir(int projeId) {
         String sql = "SELECT Id, Ad, Durum, BaslangicTarihi, BitisTarihi, AdamGun " +
-                     "FROM Gorevler WHERE ProjeId = ? AND Durum != 'Tamamlandı' AND BitisTarihi < CURRENT_DATE";
+                "FROM Gorevler WHERE ProjeId = ? AND Durum != 'Tamamlandı' AND BitisTarihi < CURRENT_DATE";
         List<String> bitmeyenGorevler = new ArrayList<>();
         try (Connection conn = DatabaseHelper.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, projeId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -201,7 +203,8 @@ class GorevRepository {
         if (!bitmeyenGorevler.isEmpty()) {
             int maxGecikme = 0;
             for (String gorev : bitmeyenGorevler) {
-                // Parse date and calculate delay (assume the format includes date in "Bitiş Tarihi: " segment)
+                // Parse date and calculate delay (assume the format includes date in "Bitiş
+                // Tarihi: " segment)
                 LocalDate bitisTarihi = LocalDate.parse(gorev.split("Bitiş Tarihi: ")[1].trim());
                 int gecikme = (int) ChronoUnit.DAYS.between(bitisTarihi, LocalDate.now());
                 maxGecikme = Math.max(maxGecikme, gecikme);
@@ -210,7 +213,7 @@ class GorevRepository {
             if (maxGecikme > 0) {
                 String sql = "UPDATE Projeler SET BitisTarihi = DATE_ADD(BitisTarihi, INTERVAL ? DAY) WHERE Id = ?";
                 try (Connection conn = DatabaseHelper.getConnection();
-                     PreparedStatement stmt = conn.prepareStatement(sql)) {
+                        PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setInt(1, maxGecikme);
                     stmt.setInt(2, projeId);
                     stmt.executeUpdate();
@@ -221,34 +224,35 @@ class GorevRepository {
             }
         }
     }
+
     public void bitisTarihiniIleriAt(int projeId) {
-    String selectSql = "SELECT MAX(DATEDIFF(CURRENT_DATE, g.BitisTarihi)) AS MaxGecikme " +
-                       "FROM Gorevler g WHERE g.ProjeId = ? AND g.Durum != 'Tamamlandı' AND g.BitisTarihi < CURRENT_DATE";
-    String updateSql = "UPDATE Projeler SET BitisTarihi = DATE_ADD(BitisTarihi, INTERVAL ? DAY) WHERE Id = ?";
+        String selectSql = "SELECT MAX(DATEDIFF(CURRENT_DATE, g.BitisTarihi)) AS MaxGecikme " +
+                "FROM Gorevler g WHERE g.ProjeId = ? AND g.Durum != 'Tamamlandı' AND g.BitisTarihi < CURRENT_DATE";
+        String updateSql = "UPDATE Projeler SET BitisTarihi = DATE_ADD(BitisTarihi, INTERVAL ? DAY) WHERE Id = ?";
 
-    try (Connection conn = DatabaseHelper.getConnection();
-         PreparedStatement selectStmt = conn.prepareStatement(selectSql);
-         PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+        try (Connection conn = DatabaseHelper.getConnection();
+                PreparedStatement selectStmt = conn.prepareStatement(selectSql);
+                PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
 
-        // Bitmeyen görevlerin maksimum gecikmesini hesapla
-        selectStmt.setInt(1, projeId);
-        try (ResultSet rs = selectStmt.executeQuery()) {
-            if (rs.next()) {
-                int maxGecikme = rs.getInt("MaxGecikme");
+            // Bitmeyen görevlerin maksimum gecikmesini hesapla
+            selectStmt.setInt(1, projeId);
+            try (ResultSet rs = selectStmt.executeQuery()) {
+                if (rs.next()) {
+                    int maxGecikme = rs.getInt("MaxGecikme");
 
-                if (maxGecikme > 0) {
-                    // Bitiş tarihini gecikme kadar ileri at
-                    updateStmt.setInt(1, maxGecikme);
-                    updateStmt.setInt(2, projeId);
-                    updateStmt.executeUpdate();
-                    System.out.println("Proje bitiş tarihi " + maxGecikme + " gün ileri alındı.");
-                } else {
-                    System.out.println("Gecikme yok, bitiş tarihi değişmedi.");
+                    if (maxGecikme > 0) {
+                        // Bitiş tarihini gecikme kadar ileri at
+                        updateStmt.setInt(1, maxGecikme);
+                        updateStmt.setInt(2, projeId);
+                        updateStmt.executeUpdate();
+                        System.out.println("Proje bitiş tarihi " + maxGecikme + " gün ileri alındı.");
+                    } else {
+                        System.out.println("Gecikme yok, bitiş tarihi değişmedi.");
+                    }
                 }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-    } catch (SQLException e) {
-        e.printStackTrace();
     }
-}
 }
