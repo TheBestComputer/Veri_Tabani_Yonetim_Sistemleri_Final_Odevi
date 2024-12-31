@@ -65,24 +65,4 @@ class ProjeRepository {
         }
         return projeler;
     }
-
-    public List<String> projeGorevListele(int projeId) {
-        List<String> gorevler = new ArrayList<>();
-        String sql = "SELECT * FROM Gorevler WHERE ProjeId = ?";
-
-        try (Connection conn = DatabaseHelper.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, projeId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    String gorevAdi = rs.getString("GorevAdi");
-                    String durum = rs.getString("Durum");
-                    gorevler.add(gorevAdi + " - " + durum);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return gorevler;
-    }
 }
