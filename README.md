@@ -1,3 +1,9 @@
+Github Kullanıcı Adları:
+TheBestComputer: Furkan Sözkesen 22060652
+AlperenSagutdev: Alperen Sağut 22060337
+SelahiddinDuman: Selahiddin Duman 22060321
+yusuf22060382 : Yusuf Akçakaya 22060382 
+
 MySql indirme aşamalarını youtube videosundan indirebilirsiniz:
 
 -https://www.youtube.com/watch?v=dbSdY_Gj4zM
