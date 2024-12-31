@@ -6,9 +6,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 class ProjeRepository {
 
@@ -33,7 +31,7 @@ class ProjeRepository {
         String sql = "SELECT p.Id, p.Ad, p.BaslangicTarihi, p.BitisTarihi, " +
                 "(SELECT COUNT(*) FROM Gorevler g WHERE g.ProjeId = p.Id AND g.Durum != 'Tamamlandı' AND g.BitisTarihi < CURRENT_DATE) AS BitmeyenGorevSayisi, "
                 +
-                "(SELECT MAX(DATEDIFF(CURRENT_DATE, g.BitisTarihi)) FROM Gorevler g WHERE g.ProjeId = p.Id AND g.Durum != 'Tamamlandı' AND g.BitisTarihi < CURRENT_DATE) AS MaxGecikme "
+                "(SELECT MAX(DATEDIFF(CURRENT_DATE, g.BitisTarihi)) FROM Gorevler g WHERE g.ProjeId = p.Id AND (g.Durum != 'Tamamlandı' OR g.BitisTarihi < CURRENT_DATE)) AS MaxGecikme "
                 +
                 "FROM Projeler p WHERE p.KullaniciId = ?";
         List<String> projeler = new ArrayList<>();

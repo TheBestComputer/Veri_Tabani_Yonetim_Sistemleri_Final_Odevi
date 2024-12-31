@@ -13,7 +13,7 @@ public class GirisEkrani {
 
     private static void girisEkrani() {
         JFrame frame = new JFrame("Giriş Ekranı");
-        frame.setSize(300, 200);
+        frame.setSize(400, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
@@ -58,7 +58,7 @@ public class GirisEkrani {
 
     public static void openKayitEkrani() {
         JFrame kayitFrame = new JFrame("Kayıt Ol");
-        kayitFrame.setSize(350, 300);
+        kayitFrame.setSize(450, 400);
         kayitFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         kayitFrame.setLocationRelativeTo(null);
 
@@ -110,7 +110,7 @@ class AnaMenu {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Ana Menü");
-        frame.setSize(400, 400);
+        frame.setSize(700, 700);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
@@ -161,7 +161,7 @@ class PersonelEkle {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Yeni Personel Ekle");
-        frame.setSize(300, 300);
+        frame.setSize(500, 500);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
@@ -208,7 +208,7 @@ class PersonelSil {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Personel Sil");
-        frame.setSize(300, 200);
+        frame.setSize(500, 500);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
@@ -267,7 +267,7 @@ class PersonelGuncelle {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Personel Güncelle");
-        frame.setSize(400, 300);
+        frame.setSize(500, 500);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
@@ -346,12 +346,12 @@ class PersonelListele {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Personelleri Listele");
-        frame.setSize(900, 700);
+        frame.setSize(1200, 800);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
         JPanel panel = new JPanel();
-        JTextArea txtArea = new JTextArea(400, 700);
+        JTextArea txtArea = new JTextArea(600, 800);
         txtArea.setEditable(false);
 
         int kullaniciId = Integer.parseInt(args[0]);
@@ -364,7 +364,7 @@ class PersonelListele {
         personelListesi.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         personelListesi.setVisibleRowCount(20);
         JScrollPane listScroller = new JScrollPane(personelListesi);
-        listScroller.setPreferredSize(new Dimension(380, 650));
+        listScroller.setPreferredSize(new Dimension(480, 750));
 
         panel.add(listScroller);
 
@@ -404,7 +404,7 @@ class ProjeEkle {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Yeni Proje Ekle");
-        frame.setSize(300, 300);
+        frame.setSize(400, 400);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
@@ -451,7 +451,7 @@ class ProjeListele {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Projeleri Listele");
-        frame.setSize(400, 300);
+        frame.setSize(600, 500);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
@@ -511,13 +511,16 @@ class GorevListele {
         }
 
         JFrame frame = new JFrame("Görevleri Listele - Proje ID: " + projeId);
-        frame.setSize(400, 300);
+        frame.setSize(1200, 960);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel();
-        JTextArea txtArea = new JTextArea(10, 30);
+        JPanel panel = new JPanel(new BorderLayout());
+        JTextArea txtArea = new JTextArea(600, 600);
         txtArea.setEditable(false);
+
+        JScrollPane scrollPane = new JScrollPane(txtArea);
+        scrollPane.setPreferredSize(new Dimension(750, 500));
 
         GorevRepository repository = new GorevRepository();
         List<String> gorevler = repository.gorevListeleByProje(projeId);
@@ -543,7 +546,7 @@ class GorevEkle {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Yeni Görev Ekle");
-        frame.setSize(400, 400);
+        frame.setSize(600, 600);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
@@ -656,7 +659,7 @@ class GorevEkle {
             int kullaniciId = Integer.parseInt(args[1]);
 
             JFrame frame = new JFrame("Görev Yönetimi - Proje ID: " + projeId);
-            frame.setSize(500, 400);
+            frame.setSize(600, 700);
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             frame.setLocationRelativeTo(null);
 
@@ -700,7 +703,7 @@ class GorevDurumuGuncelle {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Görev Durumu Güncelle");
-        frame.setSize(400, 200);
+        frame.setSize(500, 400);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 

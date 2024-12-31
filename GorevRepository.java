@@ -3,8 +3,6 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -119,10 +117,10 @@ class GorevRepository {
         ResultSet resultSet = null;
 
         try {
-            // Veritabanı bağlantısını oluştur
+
             connection = DatabaseHelper.getConnection();
 
-            // Görevi kontrol et (Mevcut durumda "Tamamlandı" ise işlem yapılmaz)
+
             String kontrolQuery = "SELECT Durum, BitisTarihi FROM Gorevler WHERE Id = ?";
             preparedStatement = connection.prepareStatement(kontrolQuery);
             preparedStatement.setInt(1, gorevId);
@@ -137,7 +135,7 @@ class GorevRepository {
                 throw new Exception("Görev bulunamadı.");
             }
 
-            // Görev durumunu "Tamamlandı" olarak güncelle ve bitiş tarihini bugüne ayarla
+
             String guncelleQuery = "UPDATE Gorevler SET Durum = ? WHERE Id = ?";
             preparedStatement = connection.prepareStatement(guncelleQuery);
             preparedStatement.setString(1, "Tamamlandı");
@@ -153,106 +151,4 @@ class GorevRepository {
         }
     }
 
-    // Çalışanları Yükleme
-    public List<String> loadCalisanlar() {
-        String sql = "SELECT Id, Ad, Soyad FROM Calisanlar";
-        List<String> calisanlar = new ArrayList<>();
-        try (Connection conn = DatabaseHelper.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql);
-                ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                int calisanId = rs.getInt("Id");
-                String calisanAdi = rs.getString("Ad") + " " + rs.getString("Soyad");
-                calisanlar.add("Çalışan ID: " + calisanId + ", İsim: " + calisanAdi);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return calisanlar;
-    }
-
-    // Bitiş Tarihine Rağmen Bitmeyen Görevleri Getirme
-    public List<String> bitmeyenGorevleriGetir(int projeId) {
-        String sql = "SELECT Id, Ad, Durum, BaslangicTarihi, BitisTarihi, AdamGun " +
-                "FROM Gorevler WHERE ProjeId = ? AND Durum != 'Tamamlandı' AND BitisTarihi < CURRENT_DATE";
-        List<String> bitmeyenGorevler = new ArrayList<>();
-        try (Connection conn = DatabaseHelper.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, projeId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    int id = rs.getInt("Id");
-                    String ad = rs.getString("Ad");
-                    String durum = rs.getString("Durum");
-                    Date bitisTarihi = rs.getDate("BitisTarihi");
-                    bitmeyenGorevler.add("Görev ID: " + id + ", Ad: " + ad + ", Durum: " + durum
-                            + ", Bitiş Tarihi: " + bitisTarihi);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return bitmeyenGorevler;
-    }
-
-    // Gecikmeyi Hesapla ve Güncelle
-    public void gecikmeyiHesaplaVeGuncelle(int projeId) {
-        List<String> bitmeyenGorevler = bitmeyenGorevleriGetir(projeId);
-
-        if (!bitmeyenGorevler.isEmpty()) {
-            int maxGecikme = 0;
-            for (String gorev : bitmeyenGorevler) {
-                // Parse date and calculate delay (assume the format includes date in "Bitiş
-                // Tarihi: " segment)
-                LocalDate bitisTarihi = LocalDate.parse(gorev.split("Bitiş Tarihi: ")[1].trim());
-                int gecikme = (int) ChronoUnit.DAYS.between(bitisTarihi, LocalDate.now());
-                maxGecikme = Math.max(maxGecikme, gecikme);
-            }
-
-            if (maxGecikme > 0) {
-                String sql = "UPDATE Projeler SET BitisTarihi = DATE_ADD(BitisTarihi, INTERVAL ? DAY) WHERE Id = ?";
-                try (Connection conn = DatabaseHelper.getConnection();
-                        PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setInt(1, maxGecikme);
-                    stmt.setInt(2, projeId);
-                    stmt.executeUpdate();
-                    System.out.println("Proje bitiş tarihi gecikme süresine göre güncellendi.");
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    public void bitisTarihiniIleriAt(int projeId) {
-        String selectSql = "SELECT MAX(DATEDIFF(CURRENT_DATE, g.BitisTarihi)) AS MaxGecikme " +
-                "FROM Gorevler g WHERE g.ProjeId = ? AND g.Durum != 'Tamamlandı' AND g.BitisTarihi < CURRENT_DATE";
-        String updateSql = "UPDATE Projeler SET BitisTarihi = DATE_ADD(BitisTarihi, INTERVAL ? DAY) WHERE Id = ?";
-
-        try (Connection conn = DatabaseHelper.getConnection();
-                PreparedStatement selectStmt = conn.prepareStatement(selectSql);
-                PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
-
-            // Bitmeyen görevlerin maksimum gecikmesini hesapla
-            selectStmt.setInt(1, projeId);
-            try (ResultSet rs = selectStmt.executeQuery()) {
-                if (rs.next()) {
-                    int maxGecikme = rs.getInt("MaxGecikme");
-
-                    if (maxGecikme > 0) {
-                        // Bitiş tarihini gecikme kadar ileri at
-                        updateStmt.setInt(1, maxGecikme);
-                        updateStmt.setInt(2, projeId);
-                        updateStmt.executeUpdate();
-                        System.out.println("Proje bitiş tarihi " + maxGecikme + " gün ileri alındı.");
-                    } else {
-                        System.out.println("Gecikme yok, bitiş tarihi değişmedi.");
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
 }
