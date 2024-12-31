@@ -77,21 +77,3 @@ CREATE TABLE Gorevler (
 
 ---
 
-## Proje Hakkında:
-
-Bu proje, bir Proje Yönetim Sistemi geliştirilmesini hedeflemektedir.
-
-### Özellikler:
-
-- Çalışan ve proje kayıtlarının tutulması.
-- Görevlerin atanması ve durumlarının izlenmesi.
-- Proje ve çalışan bilgileri arasında ilişki kurulması.
-
----
-
-### Gereksinimler:
-
-- **Java JDK 8 veya üstü**
-- **MySQL Server**
-- **MySQL Connector JAR** (mysql-connector-j-9.0.0.jar dosyasının proje klasöründe olması gerekmektedir.)
-
